@@ -93,6 +93,7 @@ let myAr3 = myAr2.then(function(data) {
 
 
 
+
 myAr3.then(function(data) {
     console.log(data);
 });
