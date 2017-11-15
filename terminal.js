@@ -1,3 +1,16 @@
+var express = require('express');
+var app = express();
+
+app.get('/', (req, res) => res.send('Hello World!'))
+
+//setting middleware
+app.use(express.static(__dirname + 'public')); //Serves resources from public folder
+
+
+var server = app.listen(5500);
+
+
+
 const R = require('ramda');
 const https = require('https');
 
@@ -166,6 +179,7 @@ function wrapWithCurried() {
         return '<' + tag + '>' + str + '</' + tag + '>';
     });
 }
+
 
 function addClassnameCurried() {
     return curry(function(classname, element) {
