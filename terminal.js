@@ -77,6 +77,9 @@ function map(callback, array) {
     return newArray;
 }
 
+
+
+
 function reduce(callback, initialValue, array) {
     var working = initialValue;
     //console.log('array:', typeof(initialValue));
