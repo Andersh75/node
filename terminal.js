@@ -24,6 +24,10 @@ var poem = 'Twas brillig, and the slithy toves\n' +
 
 
 ////
+function applyOperation(a, b, opt) {
+    return opt(a, b);
+}
+
 function argsToArray(args) {
     return Array.prototype.slice.call(args, 0);
 }
@@ -48,14 +52,34 @@ function curry (fn) {
     return given([]);
 }
 
+function curry2(fn) {
+    return function(firstArg) {
+        return function(secondArg) {
+            return fn(firstArg, secondArg);
+        }
+    }
+}
+
 function filter(callback, array) {
     return array.filter(callback);
+}
+
+function firstInAr(arr) {
+    return arr[0];
 }
 
 function forEach(callback, array) {
     for (var i = 0; i < array.length; i = i + 1) {
         callback(array[i], i);
     }
+}
+
+function isEmptyAr(arr) {
+    return !arr.length;
+}
+
+function isNull(val) {
+    return val === null;
 }
 
 function joinWord(sentence, word) {
@@ -77,8 +101,15 @@ function map(callback, array) {
     return newArray;
 }
 
+function multiplier(a, b) {
+    return a * b;
+}
 
-
+function negate(func) {
+    return function() {
+        return !func.apply(null, arguments);
+    }
+}
 
 function reduce(callback, initialValue, array) {
     var working = initialValue;
@@ -94,6 +125,61 @@ function replace(find, replacement, str) {
     return str.replace(find, replacement);
 }
 
+function restInAr(arr) {
+    return arr.slice(1, arr.length);
+}
+
+function sumOfAr(arr) {
+    console.log(arr);
+    if(isEmptyAr(arr)) {
+        return 0;
+    }
+    return firstInAr(arr) + sumOfAr(restInAr(arr));
+}
+
+// const trimSurroundingSpaces2 = (str) => str.replace(/^\s*|\s*$/g, '');
+
+// const trimSurroundingSpaces3 = function(str) {
+//     return str.replace(/^\s*|\s*$/g, '');
+// }
+
+function trimSurroundingSpaces(str) {
+    return str.replace(/^\s*|\s*$/g, '');
+}
+
+function trimDashes(str) {
+    return str.replace(/\-/g, '');
+}
+
+function Tuple( /* types */ ) {
+    const typeInfo = Array.prototype.slice.call(arguments, 0);
+    const _T =  function( /* values */ ) {
+        const values = Array.prototype.slice.call(arguments, 0);
+
+        if(values.some((val) => val === null || val === undefined)) {
+            throw new ReferenceError('Tuples may not have any null values');
+        }
+
+        if(values.length !== typeInfo.length) {
+            throw new TypeError('Tuple arity does not match its prototype');
+         }
+
+         values.map(function(val, index) {
+            this['_' + (index + 1)] = checkType(typeInfo[index])(val);
+            }, this);
+
+        Object.freeze(this);
+    };
+
+    _T.prototype.values = function() {
+        return Object.keys(this).map(function(k) {
+             return this[k];
+        }, this);
+    };
+    return _T; 
+}       
+
+
 function wrapWith(tag, str) {
     return '<' + tag + '>' + str + '</' + tag + '>';
 }
@@ -106,6 +192,15 @@ function addClassname(classname, element) {
 
 
 ////
+const checkType = curry2(function(typeDef, actualType) {
+    if(R.is(typeDef, actualType)) {
+       return actualType;
+    }
+    else {
+        throw new TypeError('Type mismatch.Expected [' + typeDef + '] but found [' + typeof actualType + ']');
+    }
+});
+
 function compose() {
     var args = argsToArray(arguments);
     var start = args.length - 1;
@@ -158,6 +253,8 @@ function getJSONCurried() {
         }); 
     });
 }
+
+const isNotNull = negate(isNull);
 
 function partial() {
     var args = argsToArray(arguments);
@@ -268,7 +365,7 @@ let myTest = modifyPoem()(poem);
 
 // log(addElement()(modifyPoem()(poem)))
 
-log(addElement()(myTest));
+//log(addElement()(myTest));
 
 
 //forEach(modifyPoem(), [poem, poem, poem]);
@@ -314,7 +411,7 @@ let myAr3 = myAr2.then(function(data) {
 //     console.log(flatten(data));
 // });
 
-myAr3.then(data => flatten(data));
+//myAr3.then(data => flatten(data));
 
 
 
@@ -362,5 +459,43 @@ myAr3.then(data => flatten(data));
 // };
 
 
+//log(multiplier(2, 3));
+
+log(applyOperation(4, 3, multiplier));
+
+log(isNotNull(null));
+
+log(sumOfAr([1, 2, 3, 4, 5]));
 
 
+
+// const isValid = function (str) {
+//     if(str.length === 0){
+//        return new Status(false,
+//             'Invald input. Expected non-empty value!');
+// }
+// else {
+//        return new Status(true, 'Success!');
+//     }
+// } 
+
+
+
+
+
+// const Status = Tuple(Boolean, String);
+
+// log(Status(true, "hello"));
+
+
+// log(isValid(trimSurroundingSpaces(trimDashes('dsfsfsd'))));
+
+//log(checkType(String)(42));
+
+const test1 = curry(multiplier);
+
+const test2 = partial(multiplier);
+
+
+log(test1(6)(5));
+log(test2(6, 5));
