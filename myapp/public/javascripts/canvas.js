@@ -110,7 +110,14 @@ const wrapTagFn = curry(function(tag, str) {
 });
 
 
-
+const makeCheckboxBlockStr = curry(function(str) {
+    return '<div class="checkboxblock__entry">\
+    <div class="w-checkbox w-clearfix">\
+    <input checked="checked" class="w-checkbox-input" data-name="checkbox-E" id="checkbox-E" name="checkbox-E" type="radio">\
+    <label class="field-label-8 w-form-label" for="checkbox-E">' + str + '</label>\
+    </div>\
+    </div>';
+});
 
 
 
@@ -173,6 +180,8 @@ function prepareRequestCanvas(baseUrl) {
     };
 };
 
+
+var data = {};
 
 
 
@@ -240,16 +249,25 @@ document.addEventListener("DOMContentLoaded", function () {
         RequestCanvas(searchObj).then((objs) => {
 
             var actions = flatten(objs).map(fn);
+            //console.log(flatten(objs));
+            data.courses = flatten(objs);
+
+            //classtypesBox
+            //log(compose(reduce(stringAdder, ''), makeCheckboxBlockStr, map((item) => item.name))(data.courses));
+            appendInnerHTMLFn(compose(reduce(stringAdder, ''), map(makeCheckboxBlockStr), map((item) => item.name))(data.courses), getElementByFn('Id', 'classtypesBox'));
+
             var results = Promise.all(actions);
     
             results.then((objs) => {
 
                 var actions2 = flatten(objs).map(fn2);
+                console.log(flatten(objs));
                 var results2 = Promise.all(actions2);
 
                 results2.then(objs => {
 
                     var actions3 = flatten(objs).map(fn3);
+                    console.log(flatten(objs));
                     var results3 = Promise.all(actions3);
 
                     results3.then(objs => {
@@ -261,7 +279,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                         obj.forEach(
                                             function(item) {
                                                 (function (childEl,inner) {
-                                                    console.log(inner);
+                                                    //console.log(inner);
 
                                                     childEl.innerHTML = '<div class="table-tesla__table__rowbox">\
                                                     <div class="table-tesla__table__row">\
