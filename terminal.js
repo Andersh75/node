@@ -24,6 +24,14 @@ var poem = 'Twas brillig, and the slithy toves\n' +
 
 
 ////
+function altUncurried(func1, func2) {
+    return function (val) {
+       return func1(val) || func2(val);
+    }
+}
+
+const alt = curry(altUncurried);
+
 function applyOperation(a, b, opt) {
     return opt(a, b);
 }
@@ -86,12 +94,14 @@ function joinWord(sentence, word) {
     return sentence + ' ' + word;
 }
 
-function log(someVariable) {
+function logUncurried(someVariable) {
     if (logOn) {
         console.log(someVariable);
     }
     return someVariable;
 }
+
+const log = curry(logUncurried);
 
 function map(callback, array) {
     var newArray = [];
@@ -129,6 +139,17 @@ function restInAr(arr) {
     return arr.slice(1, arr.length);
 }
 
+function seqUncurried() {
+    const funcs = Array.prototype.slice.call(arguments);
+    return function (val) {
+        funcs.forEach(function (fn) {
+            fn(val);
+        });
+    };
+}
+
+const seq = curry(seqUncurried);
+
 function sumOfAr(arr) {
     console.log(arr);
     if(isEmptyAr(arr)) {
@@ -143,13 +164,17 @@ function sumOfAr(arr) {
 //     return str.replace(/^\s*|\s*$/g, '');
 // }
 
-function trimSurroundingSpaces(str) {
+function trimSurroundingSpacesUncurried(str) {
     return str.replace(/^\s*|\s*$/g, '');
 }
 
-function trimDashes(str) {
+const trimSurroundingSpaces = curry(trimSurroundingSpacesUncurried);
+
+function trimDashesUncurried(str) {
     return str.replace(/\-/g, '');
 }
+
+trimDashes = curry(trimDashesUncurried);
 
 function Tuple( /* types */ ) {
     const typeInfo = Array.prototype.slice.call(arguments, 0);
@@ -201,23 +226,35 @@ const checkType = curry2(function(typeDef, actualType) {
     }
 });
 
-function compose() {
-    var args = argsToArray(arguments);
-    var start = args.length - 1;
+// function composeNOTWORKING() {
+//     var args = argsToArray(arguments);
+//     var start = args.length - 1;
     
-    return function() {
-        var i = start;
-        var remainingArgs = argsToArray(arguments);
-        var result = args[start]().apply(this, remainingArgs);
+//     return function() {
+//         var i = start;
+//         var remainingArgs = argsToArray(arguments);
+//         var result = args[start]().apply(this, remainingArgs);
         
-        i = i - 1;
-        while (i >= 0) {
-            result = args[i]().call(this, result);
-            i = i - 1;
-        }
-        //log(result);
+//         i = i - 1;
+//         while (i >= 0) {
+//             result = args[i]().call(this, result);
+//             i = i - 1;
+//         }
+//         //log(result);
+//         return result;
+//     };
+// }
+
+function compose(/* fns */) {
+    let args = arguments;
+    let start = args.length - 1;
+    return function() {
+        let i = start;
+        let result = args[start].apply(this, arguments);
+        while (i--)
+            result = args[i].call(this, result);
         return result;
-    };
+    }; 
 }
 
 function flatter(r, a) {
@@ -488,7 +525,7 @@ log(sumOfAr([1, 2, 3, 4, 5]));
 // log(Status(true, "hello"));
 
 
-// log(isValid(trimSurroundingSpaces(trimDashes('dsfsfsd'))));
+
 
 //log(checkType(String)(42));
 
@@ -496,6 +533,34 @@ const test1 = curry(multiplier);
 
 const test2 = partial(multiplier);
 
+const logger = function(appender, layout, name, level, message) {
+    const appenders = {
+        'alert': new Log4js.JSAlertAppender(),
+        'console': new Log4js.BrowserConsoleAppender()
+    };
+    const layouts = {
+        'basic': new Log4js.BasicLayout(),
+        'json': new Log4js.JSONLayout(),
+        'xml' : new Log4js.XMLLayout()
+    };
+    appender = appenders[appender];
+    appender.setLayout(layouts[layout]);
+    const logger = new Log4js.getLogger(name);
+    logger.addAppender(appender);
+    logger.log(level, message, null);
+};
+
 
 log(test1(6)(5));
 log(test2(6, 5));
+
+
+
+log(trimSurroundingSpaces(trimDashes('dsfsfsd')));
+
+log(compose(trimSurroundingSpaces, trimDashes)('  --dffsdfsdf  sdfsdf-  --sdf'));
+
+seq(log, log)('  --dffsdfsdf  sdfsdf-  --sdf');
+
+compose(seq(log, log, log), trimDashes, trimSurroundingSpaces)('  --dffsdfsdf  sdfsdf-  --sdf');
+
