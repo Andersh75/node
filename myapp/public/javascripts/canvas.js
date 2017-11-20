@@ -1,6 +1,6 @@
 'use strict';
 
-var logOn = true;
+const logOn = true;
 
 const log = my.curry(function(someVariable) {
     if (logOn) {
@@ -12,6 +12,7 @@ const log = my.curry(function(someVariable) {
 
 function initalAddToDOM(courses) {
 
+    //BUILD SIDEBOX
     courses.forEach(function(course) {
 
         let elLevel1;
@@ -35,7 +36,42 @@ function initalAddToDOM(courses) {
         elLevel4 = helper.dom.getElement('id', 'classtypesBox');
         elLevel4 = helper.dom.appendChildNodeOI(elLevel4, elLevel3);  
     });
+    
+
+    //BUILD MAIN
+    helper.dom.setAttribute('class', 'schedule-tesla__left', helper.dom.getElement('id', 'courses'));
+    helper.dom.appendInnerHTMLIO((my.compose(makeHeaderboxDivString, helper.reduce(helper.str.adder, ''), helper.map(makeHeaderboxChildDivStrings))(headerboxItemsCourses)), helper.dom.getElement('id', 'courses'));
+
+
+    courses[6].group_categories.forEach(function(group_category){
+
+        let elLevel2;
+        let elLevel3;
+        let elLevel4;
+        let innerEl;
+
+        innerEl = makeMainboxChildDivStrings(group_category);
+        elLevel2 = my.compose(helper.dom.setAttribute('class', 'table-tesla__table__row'), helper.dom.createElement)('div');
+        elLevel2 = helper.dom.appendInnerHTMLOI(elLevel2, innerEl);
+
+        elLevel3 = my.compose(helper.dom.setAttribute('class', 'table-tesla__table__rowbox'), helper.dom.createElement)('div');
+        elLevel3 = helper.dom.appendChildNodeOI(elLevel3, elLevel2);
+
+        elLevel4 = helper.dom.getElement('id', 'courses');
+        elLevel4 = helper.dom.appendChildNodeOI(elLevel4, elLevel3);  
+    })
+
+
 }
+
+const makeMainboxChildDivStrings = my.curry(function(item) {
+    return '<div class="table-tesla__cell__text">' + item.id + '</div>\
+        <div class="table-tesla__cell__text">' + item.id + '</div>\
+        <div class="table-tesla__cell__text">' + item.id + '</div>\
+        <div class="table-tesla__cell__text--bold">' + item.id + '</div>\
+        <div class="table-tesla__cell__text">' + item.id + '</div>\
+        <div class="table-tesla__cell__text">' + item.id + '</div>';
+});
 
 
 
@@ -69,8 +105,6 @@ const headerboxItemsCourses =
 
 
 
-
-
 //HTML
 const makeHeaderboxDivString = my.curry(function(str) {
         return '<div class="table-tesla__table__headerbox">' + str + '</div>';
@@ -85,7 +119,7 @@ const makeHeaderboxChildDivStrings = my.curry(function(item) {
 
 
 //AJAX
-var RequestCanvas = prepareRequestCanvas(
+const RequestCanvas = prepareRequestCanvas(
     'https://kth.instructure.com/api/v1'
 );
 
@@ -103,8 +137,8 @@ function prepareRequestCanvas(baseUrl) {
     };
 };
 
-var fn = function canvasUsersGetter(item) {
-    let searchObj = {
+const fn = function canvasUsersGetter(item) {
+    const searchObj = {
         area: "courses",
         areaId: item.id,
         what: "group_categories",
@@ -116,9 +150,9 @@ var fn = function canvasUsersGetter(item) {
 }
 
 
-var fn2 = function canvasUsersGetter2(item) {
+const fn2 = function canvasUsersGetter2(item) {
     //console.log(item);
-    let searchObj = {
+    const searchObj = {
         area: "group_categories",
         areaId: item.id,
         what: "groups",
@@ -129,9 +163,9 @@ var fn2 = function canvasUsersGetter2(item) {
     return RequestCanvas(searchObj);
 }
 
-var fn3 = function canvasUsersGetter2(item) {
+const fn3 = function canvasUsersGetter2(item) {
     //console.log(item);
-    let searchObj = {
+    const searchObj = {
         area: "groups",
         areaId: item.id,
         what: "users",
@@ -157,7 +191,7 @@ var data = {};
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    var searchObj = {
+    const searchObj = {
         area: "users",
         areaId: "5091",
         what: "courses",
@@ -237,38 +271,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 //         log(data.courses);
                         
-                //         if (Array.isArray(objs)) {
-                //             objs.forEach(
-                //                 function (obj) {
-                //                     if (Array.isArray(obj)) {
-                //                         obj.forEach(
-                //                             function(item) {
-                //                                 (function (childEl,inner) {
-                //                                     //console.log(inner);
-
-                //                                     childEl.innerHTML = '<div class="table-tesla__table__rowbox">\
-                //                                     <div class="table-tesla__table__row">\
-                //                                       <div class="table-tesla__cell__text">' + inner.id + '</div>\
-                //                                       <div class="table-tesla__cell__text">' + inner.name + '</div>\
-                //                                       <div class="table-tesla__cell__text">' + inner.sortable_name + '</div>\
-                //                                       <div class="table-tesla__cell__text--bold">' + inner.short_name + '</div>\
-                //                                       <div class="table-tesla__cell__text">' + inner.login_id + '</div>\
-                //                                       <div class="table-tesla__cell__text">' + inner.sis_user_id + '</div>\
-                //                                     </div>\
-                //                                   </div>'
-                //                                     //parentEl.appendChild(childEl);
-                //                                     helper.dom.getElement('id', 'courses').appendChild(childEl);
-                                                    
-                //                                 })(helper.dom.createElement('div'), item)
-                //                             }
-
-                //                         );
-                                        
-                //                     }
-                                    
-                //                 });
-
-                //         }
+                //         
                                 
                 // });
 
@@ -300,8 +303,34 @@ document.addEventListener("DOMContentLoaded", function () {
         //     });
             
         
-        //     helper.dom.setAttribute('class', 'schedule-tesla__left', helper.dom.getElement('id', 'courses'));
-        //     helper.dom.appendInnerHTMLIO((my.compose(makeHeaderboxDivString, helper.reduce(helper.str.adder, ''), helper.map(makeHeaderboxChildDivStrings))(headerboxItemsCourses)), helper.dom.getElement('id', 'courses'));
+        //   
+        
+        
+            // if (Array.isArray(courses)) {
+    //     courses.forEach(
+    //         function (obj) {
+
+
+    //             if (Array.isArray(obj)) {
+    //                 obj.forEach(
+    //                     function(item) {
+    //                         (function (childEl,inner) {
+    //                             //console.log(inner);
+
+    //                             childEl.innerHTML = ''
+    //                             //parentEl.appendChild(childEl);
+    //                             helper.dom.getElement('id', 'courses').appendChild(childEl);
+                                
+    //                         })(helper.dom.createElement('div'), item)
+    //                     }
+
+    //                 );
+                    
+    //             }
+                
+    //         });
+
+    // }
         
             
         
