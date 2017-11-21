@@ -73,6 +73,10 @@ var helper = {};
             el.appendChild(child);
             return el;
         }),
+        appendSiblingNodeCS: my.curry(function(el, sibling) {
+            el.insertAdjacentElement('afterend',sibling);
+            return el;
+        }),
         check: my.curry(function(el) {
             el.checked = true;
             return el;
@@ -89,6 +93,11 @@ var helper = {};
                     return document.getElementsByClassName(name);
                     break;
             }   
+        }),
+        removeChildrenUntil: my.curry(function(el, numb) {
+            while (el.children.length > numb) {
+            el.removeChild(el.lastChild);
+            }
         }),
         setAttribute: my.curry(function(attribute, name, el) {
             el.setAttribute(attribute, name);
