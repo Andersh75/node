@@ -208,6 +208,9 @@ function buildGroupCategoryInMain(group_category) {
 
     elLevel3.addEventListener('click', function() {
         events.publish('clack', this.children[0].children[0].id);
+        RequestNode(group_category.groups).then((objs) => {
+            log(objs);
+        })
     });
 }
 
@@ -323,23 +326,65 @@ const makeHeaderboxChildDivStrings = my.curry(function(item) {
 
 
 
-
-
 //AJAX
 const RequestCanvas = prepareRequestCanvas(
     'https://kth.instructure.com/api/v1'
 );
 
+const RequestNode = prepareRequestNode(
+    'http://0.0.0.0:3000/api/users'
+);
 
 function prepareRequestCanvas(baseUrl) {
     return(relUrlObj) => {
         return new Promise((resolve, reject) => {
-            const request = new XMLHttpRequest();
+            var request = new XMLHttpRequest();
             request.open('GET', baseUrl + '/' + relUrlObj.area + '/' + relUrlObj.areaId + '/' + relUrlObj.what + '?per_page=' + relUrlObj.perPage + '&access_token=' + relUrlObj.token);
             request.responseType = 'application/json';
             request.send();
             //console.log(baseUrl + '/' + relUrl);
             request.onload = () => resolve(JSON.parse(request.response));
+        })
+    };
+};
+
+function prepareRequestNode(baseUrl) {
+    return(data) => {
+        return new Promise((resolve, reject) => {
+            //var datatest = {name:"John"};
+            //var datatest = '{"location": "York","haveBeen": true,"rating": 4}';
+            var jsonData = JSON.stringify(data);
+            var request = new XMLHttpRequest();
+            request.open('POST', baseUrl, true);
+            request.setRequestHeader('Content-type', 'application/json');
+            request.send(jsonData);
+            
+            //console.log(baseUrl + '/' + relUrl);
+            request.onreadystatechange = function () {
+                if (request.readyState === 4 && request.status === 200) {
+                    var json = request.responseText;
+                    console.log(json);
+                    resolve(request.responseText)
+                }
+            };
+
+
+            // var xhr = new XMLHttpRequest();
+            // var url = "http://0.0.0.0:3000/api/users";
+            // xhr.open("POST", url, true);
+            // xhr.setRequestHeader("Content-type", "application/json");
+            // xhr.onreadystatechange = function () {
+            //     if (xhr.readyState === 4 && xhr.status === 200) {
+            //         var json = JSON.parse(xhr.responseText);
+            //         console.log(xhr.responseText);
+            //     }
+            // };
+            //var data = JSON.stringify();
+            //xhr.send('{"email": "hey@mail.com", "password": "101010"}');
+            // request.onload = () => {
+            //     log('RESPONSE');
+            //     log(request.response);
+            //     resolve(request.response)};
         })
     };
 };
@@ -397,6 +442,20 @@ var data = {};
 
 
 document.addEventListener("DOMContentLoaded", function () {
+    // var xhr = new XMLHttpRequest();
+    // var url = "http://0.0.0.0:3000/api/users";
+    // xhr.open("POST", url, true);
+    // xhr.setRequestHeader("Content-type", "application/json");
+    // xhr.onreadystatechange = function () {
+    //     if (xhr.readyState === 4 && xhr.status === 200) {
+    //         var json = JSON.parse(xhr.responseText);
+    //         console.log(xhr.responseText);
+    //     }
+    // };
+    // //var data = JSON.stringify();
+    // xhr.send('{"email": "hey@mail.com", "password": "101010"}');
+
+
 
     const searchObj = {
         area: "users",
@@ -439,15 +498,15 @@ document.addEventListener("DOMContentLoaded", function () {
                                 obj.users = [];
                                 group_category.groups.push(obj);
                                 
-                                //REQUESTING USERS
-                                // [obj].map(fn3).forEach(function(item) {
-                                //     item.then(objs => {
-                                //         //log(objs);
-                                //         objs.forEach(function(user) {
-                                //             obj.users.push(user);
-                                //         })
-                                //     })
-                                // })
+                                // REQUESTING USERS
+                                [obj].map(fn3).forEach(function(item) {
+                                    item.then(objs => {
+                                        //log(objs);
+                                        objs.forEach(function(user) {
+                                            obj.users.push(user);
+                                        })
+                                    })
+                                })
                             };
                         });
                     });

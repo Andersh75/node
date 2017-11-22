@@ -10,24 +10,105 @@ var index = require('./routes/index');
 var users = require('./routes/users');
 
 var app = express();
+var bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
 var Excel = require('exceljs');
 
 var workbook = new Excel.Workbook();
-var sheet = workbook.addWorksheet('My Sheet');
-var worksheet =  workbook.addWorksheet('sheet', {
-  pageSetup:{paperSize: 9, orientation:'landscape'}
-});
-var dobCol = worksheet.getColumn(3);
-dobCol.header = 'Gate of Birth';
-var row = worksheet.getRow(5);
-row.getCell(1).value = 5;
-
-workbook.xlsx.writeFile('./streamed-workbook.xlsx');
+workbook.removeWorksheet('Grupper');
 
 
-app.get('/', function (req, res) {
-  res.send('Hello World!')
+
+
+app.post('/', function (req, res) {
+  res.send('Got a POST request')
 })
+
+// app.post('/api/users', function(req, res) {
+//   console.log(req.body);
+
+//   req.body.forEach(function(item) {
+//     console.log(item.name);
+    
+//     worksheet.addRow(
+//     {
+//       name: ' '
+//     });
+//     worksheet.addRow({
+//       name: item.name
+//     });
+//     worksheet.lastRow.font = { size: 16, underline: 'double', bold: true };
+
+//     item.users.forEach(function (user) {
+//       console.log(user.name, ' ', user.login_id);
+//       worksheet.addRow({
+//         name: user.name,
+//         mail: user.login_id
+//       });
+
+//     })
+//   })
+
+//   setTimeout(function() {
+//     workbook.xlsx.writeFile('./streamed-workbook.xlsx');
+//   }, 2000);
+  
+//   var ressage = "Writen Excel Workbook";
+
+//   res.send(message;
+// });
+
+app.post('/api/users', function(req, res) {
+  populateExcel(req, res).then(function(res) {
+    var message = "Writen Excel Workbook";
+
+    workbook.xlsx.writeFile('./streamed-workbook.xlsx');
+  
+    res.send(message);
+});
+});
+
+
+function populateExcel(req, res) {
+  workbook.removeWorksheet('Grupper');
+  var worksheet = workbook.addWorksheet('Grupper');
+  
+  
+  worksheet.getColumn(1).key = 'name';
+  worksheet.getColumn(2).key = 'mail';
+  
+
+      return new Promise((resolve, reject) => {
+          console.log(req.body);
+        
+          req.body.forEach(function(item) {
+            console.log(item.name);
+            
+            worksheet.addRow(
+            {
+              name: ' '
+            });
+            worksheet.addRow({
+              name: item.name
+            });
+            worksheet.lastRow.font = { size: 16, underline: 'double', bold: true };
+        
+            item.users.forEach(function (user) {
+              console.log(user.name, ' ', user.login_id);
+              worksheet.addRow({
+                name: user.name,
+                mail: user.login_id
+              });
+        
+            })
+          })
+          resolve(res);
+      });
+}
+
+
 
 app.use(express.static('public'))
 
@@ -63,6 +144,10 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+app.get('/', function (req, res) {
+  res.send('Hello World!')
+})
 
 module.exports = app;
 
