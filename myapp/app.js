@@ -10,6 +10,20 @@ var index = require('./routes/index');
 var users = require('./routes/users');
 
 var app = express();
+var Excel = require('exceljs');
+
+var workbook = new Excel.Workbook();
+var sheet = workbook.addWorksheet('My Sheet');
+var worksheet =  workbook.addWorksheet('sheet', {
+  pageSetup:{paperSize: 9, orientation:'landscape'}
+});
+var dobCol = worksheet.getColumn(3);
+dobCol.header = 'Gate of Birth';
+var row = worksheet.getRow(5);
+row.getCell(1).value = 5;
+
+workbook.xlsx.writeFile('./streamed-workbook.xlsx');
+
 
 app.get('/', function (req, res) {
   res.send('Hello World!')
