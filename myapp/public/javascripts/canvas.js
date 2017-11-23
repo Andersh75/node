@@ -1,5 +1,6 @@
 'use strict';
 
+
 const logOn = true;
 
 const log = my.curry(function(someVariable) {
@@ -42,91 +43,46 @@ var events = (function(){
 })();
 
 
-events.subscribe('click', function(obj) {
-    log(obj);
-
-    helper.dom.removeChildrenUntil(helper.dom.getElement('id', 'courses'), 1);
-
-    let xxx = data.courses.filter(function(course) {
-        log(course.id);
-       return course.id == obj;
-    });
-
-    log(xxx);
-
-    xxx[0].group_categories.forEach(buildGroupCategoryInMain);
-        
-});
-
-events.subscribe('clack', function(obj) {
-    log(obj);
-
-    // helper.dom.removeChildrenUntil(helper.dom.getElement('id', 'courses'), 1);
-
-    let xxx = data.courses.filter(function(course) {
-        let xxx = [];
-        xxx = course.group_categories.filter(function(group_category) {
-            //log(group_category.id);
-            return group_category.id == obj;
-        })
-        return xxx.length > 0;
-    });
-
-    let yyy = xxx[0].group_categories.filter(function(group_category) {
-        return group_category.id == obj;
-    });
 
 
-    log(yyy);
-
-    yyy[0].groups.forEach(buildGroupInMain);
-        
-});
-
-
-events.subscribe('clock', function(obj) {
-    log(obj);
-
-
-
-
-    let xxx = data.courses.filter(function(course) {
-        let xxx = [];
-        xxx = course.group_categories.filter(function(group_category) {
-            let xxx = [];
-            xxx = group_category.groups.filter(function(group) {
-                //log(group_category.id);
-                return group.id == obj;
-            })
-            //log(group_category.id);
-            return xxx.length > 0;
-        })
-        return xxx.length > 0;
-    });
-
-    let yyy = [];
-    yyy = xxx[0].group_categories.filter(function(group_category) {
-        let xxx = [];
-        xxx = group_category.groups.filter(function(group) {
-            //log(group_category.id);
-            return group.id == obj;
-        })
-        //log(group_category.id);
-        return xxx.length > 0;
-    });
-
-    log(yyy);
+events.subscribe('clickedOnCourse', function(course) {
+    log('hopp');
+    //log(helper.map(fn, [course])[0]);
     
-    let zzz = [];
-    zzz = yyy[0].filter(function(group) {
-        //log(group_category.id);
-        return group.id == obj;
-    });
+    let promise2 = helper.map(fn, [course])[0];
+    promise2.then((objs) => {
 
-    log(zzz);
-        
+
+
+
+        log(JSON.stringify(objs));
+        log('xxx');
+        helper.dom.removeChildrenUntil(helper.dom.getElement('id', 'courses'), 1);
+        objs.forEach(buildGroupCategoryInMain);
+    }).catch('fail');
 });
 
+events.subscribe('clickedOnGroupCategory', function(group_category) {
+    log('hopp');
+    //log(helper.map(fn, [course])[0]);
+    
+    let promise3 = helper.map(fn2, [group_category])[0];
+    promise3.then((objs) => {
+        log(JSON.stringify(objs));
+        log('xxx');
+
+        objs.forEach(buildGroupInMain);
+
+        let results = Promise.all(helper.map(fn3, objs));
+        results.then((groupobjs) => {
+            log(groupobjs);
+            RequestNode(output).then((groupobjs) => {
+                log(groupobjs);
+            })
+        })
+        
+    }).catch('fail');
+});
 
 
 
@@ -137,6 +93,8 @@ function buildCoursesInSideboxLeft(course) {
     let elLevel3;
     let elLevel4;
     let innerEl;
+
+    log('here');
 
     elLevel1 = my.compose(helper.dom.setAttribute('id', course.id), helper.dom.uncheck, helper.dom.setAttribute('data-name', 'checkbox-E'), helper.dom.setAttribute('name', 'checkbox-E'), helper.dom.setAttribute('type', 'radio'), helper.dom.setAttribute('class', 'w-checkbox-input'), helper.dom.createElement)('input');
     elLevel2 = my.compose(helper.dom.setAttribute('class', 'w-checkbox w-clearfix'), helper.dom.createElement)('div');
@@ -155,12 +113,15 @@ function buildCoursesInSideboxLeft(course) {
 
     elLevel3.addEventListener('click', function() {
         helper.dom.check(this.children[0].children[0]);
-        events.publish('click', this.children[0].children[0].id);
+        //events.publish('click', this.children[0].children[0].id);
+        log('hej');
+        events.publish('clickedOnCourse', course);
     });
 }
 
 
 function buildGroupCategoryInMain(group_category) {
+    
     
     let elLevel1;
     let elLevel2;
@@ -207,15 +168,15 @@ function buildGroupCategoryInMain(group_category) {
     elLevel4 = helper.dom.appendChildNodeOI(elLevel4, elLevel3);
 
     elLevel3.addEventListener('click', function() {
-        events.publish('clack', this.children[0].children[0].id);
-        RequestNode(group_category.groups).then((objs) => {
-            log(objs);
-        })
+        //events.publish('clack', this.children[0].children[0].id);
+        events.publish('clickedOnGroupCategory', group_category);
+
     });
 }
 
 
 function buildGroupInMain(group) {
+    log('zz');
     
     let elLevel1;
     let elLevel2;
@@ -266,23 +227,6 @@ function buildGroupInMain(group) {
     });
 }
 
-
-
-function initalAddToDOM(courses) {
-    log(courses);
-    
-    //BUILD SIDEBOX
-    courses.forEach(buildCoursesInSideboxLeft);
-
-
-    //BUILD MAIN
-    helper.dom.setAttribute('class', 'schedule-tesla__left', helper.dom.getElement('id', 'courses'));
-    helper.dom.appendInnerHTMLIO((my.compose(makeHeaderboxDivString, helper.reduce(helper.str.adder, ''), helper.map(makeHeaderboxChildDivStrings))(headerboxItemsCourses)), helper.dom.getElement('id', 'courses'));
-
-    courses[0].group_categories.forEach(buildGroupCategoryInMain);
-
-
-}
 
 
 const headerboxItemsCourses = 
@@ -338,12 +282,21 @@ const RequestNode = prepareRequestNode(
 function prepareRequestCanvas(baseUrl) {
     return(relUrlObj) => {
         return new Promise((resolve, reject) => {
+            log('topp');
+            log(relUrlObj);
             var request = new XMLHttpRequest();
             request.open('GET', baseUrl + '/' + relUrlObj.area + '/' + relUrlObj.areaId + '/' + relUrlObj.what + '?per_page=' + relUrlObj.perPage + '&access_token=' + relUrlObj.token);
             request.responseType = 'application/json';
             request.send();
-            //console.log(baseUrl + '/' + relUrl);
-            request.onload = () => resolve(JSON.parse(request.response));
+
+            request.onreadystatechange = function () {
+                if (request.readyState === 4 && request.status === 200) {
+                    var json = request.response;
+                    log(json);
+                    log('aaa');
+                    resolve(JSON.parse(request.response));
+                }
+            };
         })
     };
 };
@@ -351,6 +304,8 @@ function prepareRequestCanvas(baseUrl) {
 function prepareRequestNode(baseUrl) {
     return(data) => {
         return new Promise((resolve, reject) => {
+            log('DATA');
+            log(data);
             //var datatest = {name:"John"};
             //var datatest = '{"location": "York","haveBeen": true,"rating": 4}';
             var jsonData = JSON.stringify(data);
@@ -368,23 +323,6 @@ function prepareRequestNode(baseUrl) {
                 }
             };
 
-
-            // var xhr = new XMLHttpRequest();
-            // var url = "http://0.0.0.0:3000/api/users";
-            // xhr.open("POST", url, true);
-            // xhr.setRequestHeader("Content-type", "application/json");
-            // xhr.onreadystatechange = function () {
-            //     if (xhr.readyState === 4 && xhr.status === 200) {
-            //         var json = JSON.parse(xhr.responseText);
-            //         console.log(xhr.responseText);
-            //     }
-            // };
-            //var data = JSON.stringify();
-            //xhr.send('{"email": "hey@mail.com", "password": "101010"}');
-            // request.onload = () => {
-            //     log('RESPONSE');
-            //     log(request.response);
-            //     resolve(request.response)};
         })
     };
 };
@@ -429,19 +367,50 @@ const fn3 = function canvasUsersGetter2(item) {
 }
 
 
-
-
 //DATA
 var data = {};
 
 
-
-
-
-
-
-
 document.addEventListener("DOMContentLoaded", function () {
+
+    const searchObj = {
+        area: "users",
+        areaId: "5091",
+        what: "courses",
+        perPage: "100",
+        token: "8779~3LmsZZse4dRnHvdnYBRt69Yc5dTFDApw1FlZCP49T4o6xIDsVXrKZ122VQFiopCh"
+    };
+
+    let promise1 = RequestCanvas(searchObj);
+
+    promise1.then((objs) => {
+        helper.dom.setAttribute('class', 'schedule-tesla__left', helper.dom.getElement('id', 'courses'));
+        helper.dom.appendInnerHTMLIO((my.compose(makeHeaderboxDivString, helper.reduce(helper.str.adder, ''), helper.map(makeHeaderboxChildDivStrings))(headerboxItemsCourses)), helper.dom.getElement('id', 'courses'));
+        log(objs);
+
+        data.courses = objs;
+
+        objs.forEach(buildCoursesInSideboxLeft);
+    });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // var xhr = new XMLHttpRequest();
     // var url = "http://0.0.0.0:3000/api/users";
     // xhr.open("POST", url, true);
@@ -456,67 +425,66 @@ document.addEventListener("DOMContentLoaded", function () {
     // xhr.send('{"email": "hey@mail.com", "password": "101010"}');
 
 
+    // promise.then((objs) => {
 
-    const searchObj = {
-        area: "users",
-        areaId: "5091",
-        what: "courses",
-        perPage: "100",
-        token: "8779~3LmsZZse4dRnHvdnYBRt69Yc5dTFDApw1FlZCP49T4o6xIDsVXrKZ122VQFiopCh"
-    };
-
-    RequestCanvas(searchObj).then((objs) => {
-
-        data.courses = helper.arr.flatten(objs);
-        data.courses.forEach(function(course) {
-            course.group_categories = [];
-        })
+    //     data.courses = helper.arr.flatten(objs);
+    //     data.courses.forEach(function(course) {
+    //         course.group_categories = [];
+    //     });
       
-        let results = Promise.all(helper.map(fn, data.courses));
 
-        results.then((objs) => {
+    //     let results = Promise.all(helper.map(fn, data.courses));
 
-            helper.arr.flatten(objs).forEach(function(obj) {
+    //     results.then((objs) => {
 
-                data.courses.forEach(function(course) {
-                    if (course.id === obj.course_id) {
-                        obj.groups = [];
-                        course.group_categories.push(obj);
-                    };
-                });
-            })
+    //         helper.arr.flatten(objs).forEach(function(obj) {
 
-            let results = Promise.all(helper.map(fn2, helper.arr.flatten(objs)));
+    //             data.courses.forEach(function(course) {
+    //                 if (course.id === obj.course_id) {
+    //                     obj.groups = [];
+    //                     course.group_categories.push(obj);
+    //                 };
+    //             });
+    //         })
 
-            results.then(objs => {
+    //         let results = Promise.all(helper.map(fn2, helper.arr.flatten(objs)));
 
-                helper.arr.flatten(objs).forEach(function(obj) {
+    //         results.then(objs => {
 
-                    data.courses.forEach(function(course) {
-                        course.group_categories.forEach(function(group_category) {
-                            if (group_category.id === obj.group_category_id) {
-                                obj.users = [];
-                                group_category.groups.push(obj);
+    //             helper.arr.flatten(objs).forEach(function(obj) {
+
+    //                 data.courses.forEach(function(course) {
+    //                     course.group_categories.forEach(function(group_category) {
+    //                         if (group_category.id === obj.group_category_id) {
+    //                             obj.users = [];
+    //                             group_category.groups.push(obj);
                                 
-                                // REQUESTING USERS
-                                [obj].map(fn3).forEach(function(item) {
-                                    item.then(objs => {
-                                        //log(objs);
-                                        objs.forEach(function(user) {
-                                            obj.users.push(user);
-                                        })
-                                    })
-                                })
-                            };
-                        });
-                    });
-                })
+    //                             // REQUESTING USERS
+    //                             [obj].map(fn3).forEach(function(item) {
+    //                                 item.then(objs => {
+    //                                     //log(objs);
+    //                                     objs.forEach(function(user) {
+    //                                         obj.users.push(user);
+    //                                     })
+    //                                 })
+    //                             })
+    //                         };
+    //                     });
+    //                 });
+    //             })
 
-            }).then(initalAddToDOM(data.courses));
+    //         }).then(initalAddToDOM(data.courses));
     
-        });
-    })
-});
+    //     });
+
+    //     results.then((objs) => {
+
+    //     });
+
+    //});
+
+
+
 
 
                 //     var results = Promise.all(helper.arr.flatten(objs).map(fn3));
@@ -598,8 +566,120 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // }
         
-            
+
+
+
+// events.subscribe('click', function(obj) {
+//     log(obj);
+
+    
+
+//     let xxx = data.courses.filter(function(course) {
+//         log(course.id);
+//        return course.id == obj;
+//     });
+
+//     log(xxx);
+
+//     xxx[0].group_categories.forEach(buildGroupCategoryInMain);
         
+// });
+
+// events.subscribe('clack', function(obj) {
+//     log(obj);
+
+//     // helper.dom.removeChildrenUntil(helper.dom.getElement('id', 'courses'), 1);
+
+//     let xxx = data.courses.filter(function(course) {
+//         let xxx = [];
+//         xxx = course.group_categories.filter(function(group_category) {
+//             //log(group_category.id);
+//             return group_category.id == obj;
+//         })
+//         return xxx.length > 0;
+//     });
+
+//     let yyy = xxx[0].group_categories.filter(function(group_category) {
+//         return group_category.id == obj;
+//     });
+
+
+//     log(yyy);
+
+//     yyy[0].groups.forEach(buildGroupInMain);
+        
+// });
+
+
+// events.subscribe('clock', function(obj) {
+//     log(obj);
+
+
+
+
+//     let xxx = data.courses.filter(function(course) {
+//         let xxx = [];
+//         xxx = course.group_categories.filter(function(group_category) {
+//             let xxx = [];
+//             xxx = group_category.groups.filter(function(group) {
+//                 //log(group_category.id);
+//                 return group.id == obj;
+//             })
+//             //log(group_category.id);
+//             return xxx.length > 0;
+//         })
+//         return xxx.length > 0;
+//     });
+
+//     let yyy = [];
+//     yyy = xxx[0].group_categories.filter(function(group_category) {
+//         let xxx = [];
+//         xxx = group_category.groups.filter(function(group) {
+//             //log(group_category.id);
+//             return group.id == obj;
+//         })
+//         //log(group_category.id);
+//         return xxx.length > 0;
+//     });
+
+//     log(yyy);
+    
+//     let zzz = [];
+//     zzz = yyy[0].filter(function(group) {
+//         //log(group_category.id);
+//         return group.id == obj;
+//     });
+
+//     log(zzz);
+        
+// });
+
+
+
+
+            // var xhr = new XMLHttpRequest();
+            // var url = "http://0.0.0.0:3000/api/users";
+            // xhr.open("POST", url, true);
+            // xhr.setRequestHeader("Content-type", "application/json");
+            // xhr.onreadystatechange = function () {
+            //     if (xhr.readyState === 4 && xhr.status === 200) {
+            //         var json = JSON.parse(xhr.responseText);
+            //         console.log(xhr.responseText);
+            //     }
+            // };
+            //var data = JSON.stringify();
+            //xhr.send('{"email": "hey@mail.com", "password": "101010"}');
+            // request.onload = () => {
+            //     log('RESPONSE');
+            //     log(request.response);
+            //     resolve(request.response)};
+            
+                    //console.log(baseUrl + '/' + relUrlObj.area + '/' + relUrlObj.areaId + '/' + relUrlObj.what + '?per_page=' + relUrlObj.perPage + '&access_token=' + relUrlObj.token);
+            // request.onload = () => {
+            //     log(request.response);
+            //     log('end response');
+            //     resolve(JSON.parse(request.response));
+            // };
         
         
         
