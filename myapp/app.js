@@ -4,7 +4,6 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var cors = require('cors')
 
 
 var index = require('./routes/index');
@@ -14,7 +13,6 @@ var app = express();
 var bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(cors());
 
 var Excel = require('exceljs');
 
@@ -26,7 +24,7 @@ workbook.removeWorksheet('Grupper');
 
 app.post('/', function (req, res) {
   res.send('Got a POST request')
-});
+})
 
 // app.post('/api/users', function(req, res) {
 //   console.log(req.body);
@@ -63,33 +61,30 @@ app.post('/', function (req, res) {
 // });
 
 app.post('/api/users', function(req, res) {
-
-  var promise = populateExcel(req, res);
-
-
-  promise.then(function(res) {
+  populateExcel(req, res).then(function(res) {
     var message = "Writen Excel Workbook";
 
     workbook.xlsx.writeFile('./streamed-workbook.xlsx');
   
     res.send(message);
-  });
 });
-
-
+});
 
 
 function populateExcel(req, res) {
   workbook.removeWorksheet('Grupper');
   var worksheet = workbook.addWorksheet('Grupper');
   
+  
   worksheet.getColumn(1).key = 'name';
   worksheet.getColumn(2).key = 'mail';
+  
 
       return new Promise((resolve, reject) => {
+          console.log(req.body);
         
           req.body.forEach(function(item) {
-
+            console.log(item.name);
             
             worksheet.addRow(
             {
@@ -98,9 +93,10 @@ function populateExcel(req, res) {
             worksheet.addRow({
               name: item.name
             });
-            worksheet.lastRow.font = { size: 16, bold: true };
+            worksheet.lastRow.font = { size: 16, underline: 'double', bold: true };
         
             item.users.forEach(function (user) {
+              console.log(user.name, ' ', user.login_id);
               worksheet.addRow({
                 name: user.name,
                 mail: user.login_id
