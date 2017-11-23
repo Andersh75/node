@@ -87,14 +87,9 @@ function populateExcel(req, res) {
   worksheet.getColumn(2).key = 'mail';
 
       return new Promise((resolve, reject) => {
-          //console.log(req.body);
-
-          for (var key in req.body) {
-            console.log(key);
-          }
         
           req.body.forEach(function(item) {
-            console.log(item[key]);
+
             
             worksheet.addRow(
             {
@@ -103,10 +98,9 @@ function populateExcel(req, res) {
             worksheet.addRow({
               name: item.name
             });
-            worksheet.lastRow.font = { size: 16, underline: 'double', bold: true };
+            worksheet.lastRow.font = { size: 16, bold: true };
         
             item.users.forEach(function (user) {
-              //console.log(user.name, ' ', user.login_id);
               worksheet.addRow({
                 name: user.name,
                 mail: user.login_id

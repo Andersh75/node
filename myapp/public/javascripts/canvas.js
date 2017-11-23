@@ -11,77 +11,188 @@ const log = my.curry(function(someVariable) {
 });
 
 
-var events = (function(){
-    var topics = {};
-    var hOP = topics.hasOwnProperty;
-  
-    return {
-      subscribe: function(topic, listener) {
-        // Create the topic's object if not yet created
-        if(!hOP.call(topics, topic)) topics[topic] = [];
-  
-        // Add the listener to queue
-        var index = topics[topic].push(listener) -1;
-  
-        // Provide handle back for removal of topic
-        return {
-          remove: function() {
-            delete topics[topic][index];
-          }
-        };
-      },
-      publish: function(topic, info) {
-        // If the topic doesn't exist, or there's no listeners in queue, just leave
-        if(!hOP.call(topics, topic)) return;
-  
-        // Cycle through topics queue, fire!
-        topics[topic].forEach(function(item) {
-                item(info != undefined ? info : {});
-        });
-      }
-    };
-})();
 
+helper.events.subscribe('clickedOnCourse', function(course) {
+    log(data.courses);
+    log(course);
 
-
-
-events.subscribe('clickedOnCourse', function(course) {
-    log('hopp');
-    //log(helper.map(fn, [course])[0]);
-    
-    let promise2 = helper.map(fn, [course])[0];
-    promise2.then((objs) => {
-
-
-
-
-        log(JSON.stringify(objs));
-        log('xxx');
+    if (typeof course.group_categories !== "undefined") {
+        log('LOADED');
         helper.dom.removeChildrenUntil(helper.dom.getElement('id', 'courses'), 1);
-        objs.forEach(buildGroupCategoryInMain);
+        course.group_categories.forEach(buildGroupCategoryInMain);
+        course.group_categories.forEach(function(group_category) {
+            log('preprep');
+            helper.events.publish('prepareClickedOnGroupCategory', group_category);
+        });
+    } else {
+        log('NOT LOADED');
+        helper.dom.removeChildrenUntil(helper.dom.getElement('id', 'courses'), 1);
+        let groupCategoryRequestPromise = helper.map(fn, [course])[0];
+        groupCategoryRequestPromise.then((objs) => {
+            
+    
+            if (objs.length) {
+                data.courses = data.courses.map(function(course) {
+    
+                    course.group_categories = [];
+                    
+                    if (objs[0].course_id === course.id) {
+                        course.group_categories = objs;
+                    }
+                    
+                    return course;
+                });
+                
+                objs.forEach(buildGroupCategoryInMain);
+                objs.forEach(function(group_category) {
+                    helper.events.publish('prepareClickedOnGroupCategory', group_category);
+                });
+            }
+            
+            
+            
+        }).catch(function() {
+            console.log('fail');
+            helper.dom.removeChildrenUntil(helper.dom.getElement('id', 'courses'), 1);
+        });
+    }
+    
+
+});
+
+
+helper.events.subscribe('prepareClickedOnCourse', function(course) {
+    
+    let groupCategoryRequestPromise = helper.map(fn, [course])[0];
+    groupCategoryRequestPromise.then((objs) => {
+        log(objs);
+
+        if (objs.length) {
+            data.courses = data.courses.map(function(course) {
+                if (typeof course.group_categories === "undefined") {
+                    
+                    if (objs[0].course_id === course.id) {
+                        log('objs');
+                        log(objs);
+                        course.group_categories = objs;
+                        console.log('added ', course.id);
+                    }
+                }
+                log(course);
+
+                return course;
+            });
+
+            log(data.courses);
+        }
+        
+        //helper.dom.removeChildrenUntil(helper.dom.getElement('id', 'courses'), 1);
+        //objs.forEach(buildGroupCategoryInMain);
     }).catch('fail');
 });
 
-events.subscribe('clickedOnGroupCategory', function(group_category) {
-    log('hopp');
-    //log(helper.map(fn, [course])[0]);
+
+helper.events.subscribe('clickedOnGroupCategory', function(group_category) {
+
+    if (typeof group_category.groups !== "undefined") {
+
     
-    let promise3 = helper.map(fn2, [group_category])[0];
-    promise3.then((objs) => {
-        log(JSON.stringify(objs));
-        log('xxx');
+        let userRequestPromiseAll = Promise.all(helper.map(fn3, group_category.groups));
+        userRequestPromiseAll.then((groupobjs) => {
 
-        objs.forEach(buildGroupInMain);
-
-        let results = Promise.all(helper.map(fn3, objs));
-        results.then((groupobjs) => {
-            log(groupobjs);
-            RequestNode(output).then((groupobjs) => {
-                log(groupobjs);
-            })
-        })
+            group_category.groups.forEach(function(groupItem) {
+                groupItem.users = groupobjs.shift();
+            });
+            
+            RequestNode(group_category.groups).then((message) => {
+                log(message);
+            });
+        });
+    
         
-    }).catch('fail');
+
+    } else {
+        let groupRequestPromise = helper.map(fn2, [group_category])[0];
+        groupRequestPromise.then((objs) => {
+            
+            if (objs.length) {
+                data.courses.forEach(function(courseItem) {
+                    courseItem.group_categories = courseItem.group_categories.map(function(groupCategory) {
+                        if (objs[0].group_category_id === groupCategory.id) {
+                            groupCategory.groups = objs;
+    
+                            let userRequestPromiseAll = Promise.all(helper.map(fn3, objs));
+                            userRequestPromiseAll.then((groupobjs) => {
+    
+                                groupCategory.groups.forEach(function(groupItem) {
+                                    groupItem.users = groupobjs.shift();
+                                });
+                                
+                                RequestNode(groupCategory.groups).then((message) => {
+                                    log(message);
+                                })
+                            });
+    
+    
+                        }
+                        
+                        return groupCategory;
+                    });
+    
+    
+    
+                });
+                
+            }
+           
+        }).catch('fail');
+
+    }
+    
+
+});
+
+
+helper.events.subscribe('prepareClickedOnGroupCategory', function(group_category) {
+    log('PrepGC');
+    
+    let groupRequestPromise = helper.map(fn2, [group_category])[0];
+    groupRequestPromise.then((objs) => {
+        log('Im in')
+        
+        if (objs.length) {
+            data.courses.forEach(function(courseItem) {
+                if (typeof courseItem.group_categories !== "undefined") {
+                    courseItem.group_categories = courseItem.group_categories.map(function(groupCategory) {
+                        if (objs[0].group_category_id === groupCategory.id) {
+                            groupCategory.groups = objs;
+    
+                            let userRequestPromiseAll = Promise.all(helper.map(fn3, objs));
+                            userRequestPromiseAll.then((groupobjs) => {
+    
+                                groupCategory.groups.forEach(function(groupItem) {
+                                    groupItem.users = groupobjs.shift();
+                                });
+
+                                log('Im here')
+                                
+                                // RequestNode(groupCategory.groups).then((message) => {
+                                //     log(message);
+                                // })
+                            });
+    
+    
+                        }
+                        
+                        return groupCategory;
+                    });
+
+                }
+            });
+            
+        }
+       
+    }).catch(console.log('fail'));
 });
 
 
@@ -93,8 +204,6 @@ function buildCoursesInSideboxLeft(course) {
     let elLevel3;
     let elLevel4;
     let innerEl;
-
-    log('here');
 
     elLevel1 = my.compose(helper.dom.setAttribute('id', course.id), helper.dom.uncheck, helper.dom.setAttribute('data-name', 'checkbox-E'), helper.dom.setAttribute('name', 'checkbox-E'), helper.dom.setAttribute('type', 'radio'), helper.dom.setAttribute('class', 'w-checkbox-input'), helper.dom.createElement)('input');
     elLevel2 = my.compose(helper.dom.setAttribute('class', 'w-checkbox w-clearfix'), helper.dom.createElement)('div');
@@ -113,14 +222,15 @@ function buildCoursesInSideboxLeft(course) {
 
     elLevel3.addEventListener('click', function() {
         helper.dom.check(this.children[0].children[0]);
-        //events.publish('click', this.children[0].children[0].id);
-        log('hej');
-        events.publish('clickedOnCourse', course);
+        //helper.events.publish('click', this.children[0].children[0].id);
+        helper.events.publish('clickedOnCourse', course);
     });
 }
 
 
 function buildGroupCategoryInMain(group_category) {
+
+    log(group_category);
     
     
     let elLevel1;
@@ -168,15 +278,14 @@ function buildGroupCategoryInMain(group_category) {
     elLevel4 = helper.dom.appendChildNodeOI(elLevel4, elLevel3);
 
     elLevel3.addEventListener('click', function() {
-        //events.publish('clack', this.children[0].children[0].id);
-        events.publish('clickedOnGroupCategory', group_category);
+        //helper.events.publish('clack', this.children[0].children[0].id);
+        helper.events.publish('clickedOnGroupCategory', group_category);
 
     });
 }
 
 
 function buildGroupInMain(group) {
-    log('zz');
     
     let elLevel1;
     let elLevel2;
@@ -223,7 +332,7 @@ function buildGroupInMain(group) {
     elLevel4 = helper.dom.appendSiblingNodeCS(elLevel4, elLevel3);
 
     elLevel3.addEventListener('click', function() {
-        events.publish('clock', this.children[0].children[0].id);
+        // helper.events.publish('clock', this.children[0].children[0].id);
     });
 }
 
@@ -282,8 +391,6 @@ const RequestNode = prepareRequestNode(
 function prepareRequestCanvas(baseUrl) {
     return(relUrlObj) => {
         return new Promise((resolve, reject) => {
-            log('topp');
-            log(relUrlObj);
             var request = new XMLHttpRequest();
             request.open('GET', baseUrl + '/' + relUrlObj.area + '/' + relUrlObj.areaId + '/' + relUrlObj.what + '?per_page=' + relUrlObj.perPage + '&access_token=' + relUrlObj.token);
             request.responseType = 'application/json';
@@ -291,9 +398,6 @@ function prepareRequestCanvas(baseUrl) {
 
             request.onreadystatechange = function () {
                 if (request.readyState === 4 && request.status === 200) {
-                    var json = request.response;
-                    log(json);
-                    log('aaa');
                     resolve(JSON.parse(request.response));
                 }
             };
@@ -304,22 +408,14 @@ function prepareRequestCanvas(baseUrl) {
 function prepareRequestNode(baseUrl) {
     return(data) => {
         return new Promise((resolve, reject) => {
-            log('DATA');
-            log(data);
-            //var datatest = {name:"John"};
-            //var datatest = '{"location": "York","haveBeen": true,"rating": 4}';
             var jsonData = JSON.stringify(data);
             var request = new XMLHttpRequest();
             request.open('POST', baseUrl, true);
             request.setRequestHeader('Content-type', 'application/json');
             request.send(jsonData);
-            
-            //console.log(baseUrl + '/' + relUrl);
             request.onreadystatechange = function () {
                 if (request.readyState === 4 && request.status === 200) {
-                    var json = request.responseText;
-                    console.log(json);
-                    resolve(request.responseText)
+                    resolve(request.responseText);
                 }
             };
 
@@ -341,7 +437,6 @@ const fn = function canvasUsersGetter(item) {
 
 
 const fn2 = function canvasUsersGetter2(item) {
-    //console.log(item);
     const searchObj = {
         area: "group_categories",
         areaId: item.id,
@@ -354,7 +449,6 @@ const fn2 = function canvasUsersGetter2(item) {
 }
 
 const fn3 = function canvasUsersGetter2(item) {
-    //console.log(item);
     const searchObj = {
         area: "groups",
         areaId: item.id,
@@ -381,311 +475,19 @@ document.addEventListener("DOMContentLoaded", function () {
         token: "8779~3LmsZZse4dRnHvdnYBRt69Yc5dTFDApw1FlZCP49T4o6xIDsVXrKZ122VQFiopCh"
     };
 
-    let promise1 = RequestCanvas(searchObj);
+    let courseRequestPromise = RequestCanvas(searchObj);
 
-    promise1.then((objs) => {
+    courseRequestPromise.then((objs) => {
         helper.dom.setAttribute('class', 'schedule-tesla__left', helper.dom.getElement('id', 'courses'));
         helper.dom.appendInnerHTMLIO((my.compose(makeHeaderboxDivString, helper.reduce(helper.str.adder, ''), helper.map(makeHeaderboxChildDivStrings))(headerboxItemsCourses)), helper.dom.getElement('id', 'courses'));
         log(objs);
 
         data.courses = objs;
 
-        objs.forEach(buildCoursesInSideboxLeft);
+        data.courses.forEach(buildCoursesInSideboxLeft);
+
+        data.courses.forEach(function(course) {
+            helper.events.publish('prepareClickedOnCourse', course);
+        });
     });
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // var xhr = new XMLHttpRequest();
-    // var url = "http://0.0.0.0:3000/api/users";
-    // xhr.open("POST", url, true);
-    // xhr.setRequestHeader("Content-type", "application/json");
-    // xhr.onreadystatechange = function () {
-    //     if (xhr.readyState === 4 && xhr.status === 200) {
-    //         var json = JSON.parse(xhr.responseText);
-    //         console.log(xhr.responseText);
-    //     }
-    // };
-    // //var data = JSON.stringify();
-    // xhr.send('{"email": "hey@mail.com", "password": "101010"}');
-
-
-    // promise.then((objs) => {
-
-    //     data.courses = helper.arr.flatten(objs);
-    //     data.courses.forEach(function(course) {
-    //         course.group_categories = [];
-    //     });
-      
-
-    //     let results = Promise.all(helper.map(fn, data.courses));
-
-    //     results.then((objs) => {
-
-    //         helper.arr.flatten(objs).forEach(function(obj) {
-
-    //             data.courses.forEach(function(course) {
-    //                 if (course.id === obj.course_id) {
-    //                     obj.groups = [];
-    //                     course.group_categories.push(obj);
-    //                 };
-    //             });
-    //         })
-
-    //         let results = Promise.all(helper.map(fn2, helper.arr.flatten(objs)));
-
-    //         results.then(objs => {
-
-    //             helper.arr.flatten(objs).forEach(function(obj) {
-
-    //                 data.courses.forEach(function(course) {
-    //                     course.group_categories.forEach(function(group_category) {
-    //                         if (group_category.id === obj.group_category_id) {
-    //                             obj.users = [];
-    //                             group_category.groups.push(obj);
-                                
-    //                             // REQUESTING USERS
-    //                             [obj].map(fn3).forEach(function(item) {
-    //                                 item.then(objs => {
-    //                                     //log(objs);
-    //                                     objs.forEach(function(user) {
-    //                                         obj.users.push(user);
-    //                                     })
-    //                                 })
-    //                             })
-    //                         };
-    //                     });
-    //                 });
-    //             })
-
-    //         }).then(initalAddToDOM(data.courses));
-    
-    //     });
-
-    //     results.then((objs) => {
-
-    //     });
-
-    //});
-
-
-
-
-
-                //     var results = Promise.all(helper.arr.flatten(objs).map(fn3));
-
-                //     results.then(objs => {
-
-                //         helper.arr.flatten(objs).forEach(function(obj) {
-                //             data.courses.forEach(function(course) {
-                //                 course.group_categories.forEach(function(group_category) {
-                //                     group_category.groups.forEach(function(group) {
-                //                         if (group.id === obj.group_id) {
-                //                             group.users.push(obj);
-                //                         };
-                //                     });
-                //                 });
-                //             });
-                //         })
-
-                //         log(data.courses);
-                        
-                //         
-                                
-                // });
-
-                  //log(data.courses);
-
-        //var actions = helper.arr.flatten(objs).map(fn);
-
-
-        //log(data.courses);
-
-
-
-        // let myTestAr = [];
-        
-        //     myTestAr.push('one', 'two', 'three');
-        
-        //     myTestAr.pop();
-        
-        //     myTestAr.shift();
-        
-        //     myTestAr.unshift('newOne', 'newTwo');
-        
-        //     myTestAr.forEach(function (item) {
-        //         my.compose(helper.dom.appendChildNodeOI(helper.dom.getElement('id', 'sideboxesRight')), helper.dom.setAttribute('class', item), helper.dom.createElement)('div');
-        //     });
-        
-        //     myTestAr.forEach(function (item) {
-        //         my.compose(helper.dom.appendChildNodeOI(helper.dom.getElement('id', 'sideboxesRight')), helper.dom.setAttribute('data-sdfsdf', item), helper.dom.setAttribute('class', item), helper.dom.createElement)('div');
-        //     });
-            
-        
-        //   
-        
-        
-            // if (Array.isArray(courses)) {
-    //     courses.forEach(
-    //         function (obj) {
-
-
-    //             if (Array.isArray(obj)) {
-    //                 obj.forEach(
-    //                     function(item) {
-    //                         (function (childEl,inner) {
-    //                             //console.log(inner);
-
-    //                             childEl.innerHTML = ''
-    //                             //parentEl.appendChild(childEl);
-    //                             helper.dom.getElement('id', 'courses').appendChild(childEl);
-                                
-    //                         })(helper.dom.createElement('div'), item)
-    //                     }
-
-    //                 );
-                    
-    //             }
-                
-    //         });
-
-    // }
-        
-
-
-
-// events.subscribe('click', function(obj) {
-//     log(obj);
-
-    
-
-//     let xxx = data.courses.filter(function(course) {
-//         log(course.id);
-//        return course.id == obj;
-//     });
-
-//     log(xxx);
-
-//     xxx[0].group_categories.forEach(buildGroupCategoryInMain);
-        
-// });
-
-// events.subscribe('clack', function(obj) {
-//     log(obj);
-
-//     // helper.dom.removeChildrenUntil(helper.dom.getElement('id', 'courses'), 1);
-
-//     let xxx = data.courses.filter(function(course) {
-//         let xxx = [];
-//         xxx = course.group_categories.filter(function(group_category) {
-//             //log(group_category.id);
-//             return group_category.id == obj;
-//         })
-//         return xxx.length > 0;
-//     });
-
-//     let yyy = xxx[0].group_categories.filter(function(group_category) {
-//         return group_category.id == obj;
-//     });
-
-
-//     log(yyy);
-
-//     yyy[0].groups.forEach(buildGroupInMain);
-        
-// });
-
-
-// events.subscribe('clock', function(obj) {
-//     log(obj);
-
-
-
-
-//     let xxx = data.courses.filter(function(course) {
-//         let xxx = [];
-//         xxx = course.group_categories.filter(function(group_category) {
-//             let xxx = [];
-//             xxx = group_category.groups.filter(function(group) {
-//                 //log(group_category.id);
-//                 return group.id == obj;
-//             })
-//             //log(group_category.id);
-//             return xxx.length > 0;
-//         })
-//         return xxx.length > 0;
-//     });
-
-//     let yyy = [];
-//     yyy = xxx[0].group_categories.filter(function(group_category) {
-//         let xxx = [];
-//         xxx = group_category.groups.filter(function(group) {
-//             //log(group_category.id);
-//             return group.id == obj;
-//         })
-//         //log(group_category.id);
-//         return xxx.length > 0;
-//     });
-
-//     log(yyy);
-    
-//     let zzz = [];
-//     zzz = yyy[0].filter(function(group) {
-//         //log(group_category.id);
-//         return group.id == obj;
-//     });
-
-//     log(zzz);
-        
-// });
-
-
-
-
-            // var xhr = new XMLHttpRequest();
-            // var url = "http://0.0.0.0:3000/api/users";
-            // xhr.open("POST", url, true);
-            // xhr.setRequestHeader("Content-type", "application/json");
-            // xhr.onreadystatechange = function () {
-            //     if (xhr.readyState === 4 && xhr.status === 200) {
-            //         var json = JSON.parse(xhr.responseText);
-            //         console.log(xhr.responseText);
-            //     }
-            // };
-            //var data = JSON.stringify();
-            //xhr.send('{"email": "hey@mail.com", "password": "101010"}');
-            // request.onload = () => {
-            //     log('RESPONSE');
-            //     log(request.response);
-            //     resolve(request.response)};
-            
-                    //console.log(baseUrl + '/' + relUrlObj.area + '/' + relUrlObj.areaId + '/' + relUrlObj.what + '?per_page=' + relUrlObj.perPage + '&access_token=' + relUrlObj.token);
-            // request.onload = () => {
-            //     log(request.response);
-            //     log('end response');
-            //     resolve(JSON.parse(request.response));
-            // };
-        
-        
-        
-        
-        
-        
-        
-        
-
