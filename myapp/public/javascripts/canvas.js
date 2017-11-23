@@ -17,13 +17,16 @@ helper.events.subscribe('clickedOnCourse', function(course) {
     log(course);
 
     if (typeof course.group_categories !== "undefined") {
-        log('LOADED');
-        helper.dom.removeChildrenUntil(helper.dom.getElement('id', 'courses'), 1);
-        course.group_categories.forEach(buildGroupCategoryInMain);
-        course.group_categories.forEach(function(group_category) {
-            log('preprep');
-            helper.events.publish('prepareClickedOnGroupCategory', group_category);
-        });
+        if (course.group_categories.length) {
+            log('LOADED');
+            helper.dom.removeChildrenUntil(helper.dom.getElement('id', 'courses'), 1);
+            course.group_categories.forEach(buildGroupCategoryInMain);
+            course.group_categories.forEach(function(group_category) {
+                log('preprep');
+                helper.events.publish('prepareClickedOnGroupCategory', group_category);
+            });
+        }
+
     } else {
         log('NOT LOADED');
         helper.dom.removeChildrenUntil(helper.dom.getElement('id', 'courses'), 1);
@@ -47,6 +50,8 @@ helper.events.subscribe('clickedOnCourse', function(course) {
                 objs.forEach(function(group_category) {
                     helper.events.publish('prepareClickedOnGroupCategory', group_category);
                 });
+            } else {
+                
             }
             
             
@@ -95,21 +100,24 @@ helper.events.subscribe('prepareClickedOnCourse', function(course) {
 helper.events.subscribe('clickedOnGroupCategory', function(group_category) {
 
     if (typeof group_category.groups !== "undefined") {
-
-    
-        let userRequestPromiseAll = Promise.all(helper.map(fn3, group_category.groups));
-        userRequestPromiseAll.then((groupobjs) => {
-
-            group_category.groups.forEach(function(groupItem) {
-                groupItem.users = groupobjs.shift();
-            });
-            
+        if (group_category.groups.length) {
             RequestNode(group_category.groups).then((message) => {
                 log(message);
             });
-        });
+        }
+            // let userRequestPromiseAll = Promise.all(helper.map(fn3, group_category.groups));
+            // userRequestPromiseAll.then((groupobjs) => {
     
-        
+            //     group_category.groups.forEach(function(groupItem) {
+            //         groupItem.users = groupobjs.shift();
+            //     });
+                
+            //     RequestNode(group_category.groups).then((message) => {
+            //         log(message);
+            //     });
+            // });
+    // }
+   
 
     } else {
         let groupRequestPromise = helper.map(fn2, [group_category])[0];
