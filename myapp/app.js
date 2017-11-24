@@ -87,6 +87,7 @@ function populateExcel(req, res) {
   worksheet.getColumn(2).key = 'mail';
 
       return new Promise((resolve, reject) => {
+        console.log(req.body);
         
           req.body.forEach(function(item) {
 

@@ -83,6 +83,40 @@ var helper = {};
     })();
     
     
+    //Requests
+    this.requestPostJson = my.curry(function(baseString, requestString, data) {
+            return new Promise((resolve, reject) => {
+                var request = new XMLHttpRequest();
+                request.open('POST', baseString + requestString, true);
+                console.log(baseString + requestString);
+                console.log(JSON.stringify(data));
+                request.setRequestHeader('Content-type', 'application/json');
+                request.send(JSON.stringify(data));
+                request.onreadystatechange = function () {
+                    if (request.readyState === 4 && request.status === 200) {
+                        resolve(request.response);
+                    }
+                };
+            })
+        });
+
+        
+
+
+    this.requestGetJson = my.curry(function(baseString, requestString) {
+        return new Promise((resolve, reject) => {
+            var request = new XMLHttpRequest();
+            request.open('GET', baseString + requestString);
+            request.responseType = 'application/json';
+            request.send();
+            request.onreadystatechange = function () {
+                if (request.readyState === 4 && request.status === 200) {
+                    resolve(JSON.parse(request.response));
+                }
+            };
+        })
+    });
+
    
 
     
