@@ -13,6 +13,13 @@
     log(myTest('rrrrr'));
     
 
+    //Strings
+    var str = "How are you doing today?";
+
+    //Non destructive 
+    log(str.split(" "));                //returns Array of words
+
+
 
     //Arrays
     var numbersAr = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];

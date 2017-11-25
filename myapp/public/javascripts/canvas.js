@@ -253,8 +253,8 @@ function buildGroupCategoryInMain(group_category) {
 
     elLevel2 = my.compose(helper.dom.setAttribute('class', 'table-tesla__table__row'), helper.dom.createElement)('div');
 
-    innerEl = group_category.id;
-    elLevel1 = my.compose(helper.dom.setAttribute('id', group_category.id), helper.dom.setAttribute('class', 'table-tesla__cell__text--bold'), helper.dom.createElement)('div');
+    innerEl = '';
+    elLevel1 = my.compose(helper.dom.setAttribute('class', 'table-tesla__cell__text--bold'), helper.dom.setAttribute('type', 'checkbox'), helper.dom.createElement)('input');
     elLevel1 = helper.dom.appendInnerHTMLOI(elLevel1, innerEl);
     elLevel2 = helper.dom.appendChildNodeOI(elLevel2, elLevel1);
 
@@ -263,10 +263,12 @@ function buildGroupCategoryInMain(group_category) {
     elLevel1 = helper.dom.appendInnerHTMLOI(elLevel1, innerEl);
     elLevel2 = helper.dom.appendChildNodeOI(elLevel2, elLevel1);
 
-    innerEl = '';
-    elLevel1 = my.compose(helper.dom.setAttribute('class', 'table-tesla__cell__text--bold'), helper.dom.createElement)('div');
+    innerEl = '<button type="button">Download</button>';
+    elLevel1 = my.compose(helper.dom.setAttribute('id', group_category.id), helper.dom.setAttribute('class', 'table-tesla__cell__text--bold'), helper.dom.createElement)('div');
     elLevel1 = helper.dom.appendInnerHTMLOI(elLevel1, innerEl);
     elLevel2 = helper.dom.appendChildNodeOI(elLevel2, elLevel1);
+
+
 
     innerEl = '';
     elLevel1 = my.compose(helper.dom.setAttribute('class', 'table-tesla__cell__text--bold'), helper.dom.createElement)('div');
@@ -353,27 +355,27 @@ function buildGroupInMain(group) {
 const headerboxItemsCourses = 
     [
         {
-            lable: 'KURS',
+            lable: 'GROUP CATEGORY',
             class: 'table-tesla__header__lablebox--course'
         },
         {
-            lable: 'PERIOD',
+            lable: '',
             class: 'table-tesla__header__lablebox-period'
         },
         {
-            lable: 'PROGRAM',
+            lable: '',
             class: 'table-tesla__table__header__lablebox-programandyear'
         },
         {
-            lable: 'ÅRSKURS',
+            lable: '',
             class: 'table-tesla__table__header__lablebox-programandyear'
         },
         {
-            lable: 'EXAMINATOR',
+            lable: '',
             class: 'table-tesla__table__header__lablebox-programandyear'
         },
         {
-            lable: 'ANSVARIG',
+            lable: '',
             class: 'table-tesla__table__header__lablebox-programandyear'
         }
     ];

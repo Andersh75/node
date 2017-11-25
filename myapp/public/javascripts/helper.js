@@ -34,7 +34,10 @@ var helper = {};
     //Strings
     this.str = {
         adder: my.curry(function(acc, nextString) {
-        return acc + nextString;
+            return acc + nextString;
+        }),
+        splitter: my.curry(function(str, splitter) {
+            return str.split(splitter);
         })
     };
 
