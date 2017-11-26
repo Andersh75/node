@@ -3,7 +3,7 @@
     
     log(helper.str.adder('hej')('då2'));
     
-    log(helper.str.adder()('hej')('då3'));
+    log(helper.str.adder()('hej')('da3'));
     
     
     const myTest = my.compose(helper.str.adder('hej'), helper.str.adder('abc'));
@@ -12,13 +12,6 @@
     
     log(myTest('rrrrr'));
     
-
-    //Strings
-    var str = "How are you doing today?";
-
-    //Non destructive 
-    log(str.split(" "));                //returns Array of words
-
 
 
     //Arrays

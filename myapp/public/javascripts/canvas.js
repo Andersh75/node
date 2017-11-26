@@ -15,9 +15,26 @@ const log = my.curry(function(someVariable) {
 //Event listeners
 helper.events.subscribe('reloadedPage', function(user) {
     coursesFromUser(user).then((objs) => {
-        helper.dom.setAttribute('class', 'schedule-tesla__left', helper.dom.getElement('id', 'courses'));
-        helper.dom.appendInnerHTMLIO((my.compose(makeHeaderboxDivString, helper.reduce(helper.str.adder, ''), helper.map(makeHeaderboxChildDivStrings))(headerboxItemsCourses)), helper.dom.getElement('id', 'courses'));
-        //log(objs);
+
+        //buildHeaderInMain();
+        helper.dom.setAttribute('class', 'schedule-tesla__left', helper.dom.getElement('id', 'schedule'));
+
+        // //log(objs);
+        let innerEl = '<div class="table-tesla__table__headerbox">\
+        <div class="table-tesla__header__lablebox--course">\
+          <div class="table-tesla__header__cell__text">INNEHÅLL</div>\
+        </div>\
+        <div class="table-tesla__table__header__lablebox-programandyear">\
+          <div class="form-block-2 w-form">\
+            <form id="email-form-4" name="email-form-4" data-name="Email Form 4"><input type="submit" value="Submit" data-wait="Please wait..." class="submit-button-excel w-button"></form>\
+            <div class="w-form-done"></div>\
+            <div class="w-form-fail"></div>\
+          </div>\
+        </div>\
+      </div>';
+
+      helper.dom.appendInnerHTMLIO(innerEl, helper.dom.getElement('id', 'schedule'));
+        
 
         data.courses = objs;
 
@@ -35,12 +52,12 @@ helper.events.subscribe('clickedOnCourse', function(course) {
 
     if (typeof course.group_categories !== "undefined" && course.group_categories.length && course.done) {
         
-        helper.dom.removeChildrenUntil(helper.dom.getElement('id', 'courses'), 1);
+        helper.dom.removeChildrenUntil(helper.dom.getElement('id', 'schedule'), 1);
         buildGroupCategoriesAndPrepareGroups(course);
         
 
     } else {
-        helper.dom.removeChildrenUntil(helper.dom.getElement('id', 'courses'), 1);
+        helper.dom.removeChildrenUntil(helper.dom.getElement('id', 'schedule'), 1);
 
         let groupCategoryRequestPromise = helper.map(groupCateroriesFromCourse, [course])[0];
         groupCategoryRequestPromise.then((objs) => {
@@ -53,7 +70,7 @@ helper.events.subscribe('clickedOnCourse', function(course) {
             
         }).catch(function() {
             console.log('fail');
-            helper.dom.removeChildrenUntil(helper.dom.getElement('id', 'courses'), 1);
+            helper.dom.removeChildrenUntil(helper.dom.getElement('id', 'schedule'), 1);
         });
     }
     
@@ -243,59 +260,174 @@ function buildCoursesInSideboxLeft(course) {
 }
 
 
+
+// function buildGroupCategoryInMain(group_category) {
+    
+//     let elLevel1;
+//     let elLevel2;
+//     let elLevel3;
+//     let elLevel4;
+//     let innerEl;
+
+//     elLevel2 = my.compose(helper.dom.setAttribute('class', 'table-tesla__table__row'), helper.dom.createElement)('div');
+
+//     innerEl = '';
+//     elLevel1 = my.compose(helper.dom.setAttribute('class', 'table-tesla__cell__text--bold'), helper.dom.setAttribute('type', 'checkbox'), helper.dom.createElement)('input');
+//     elLevel1 = helper.dom.appendInnerHTMLOI(elLevel1, innerEl);
+//     elLevel2 = helper.dom.appendChildNodeOI(elLevel2, elLevel1);
+
+//     innerEl = group_category.name;
+//     elLevel1 = my.compose(helper.dom.setAttribute('class', 'table-tesla__cell__text--bold'), helper.dom.createElement)('div');
+//     elLevel1 = helper.dom.appendInnerHTMLOI(elLevel1, innerEl);
+//     elLevel2 = helper.dom.appendChildNodeOI(elLevel2, elLevel1);
+
+//     innerEl = '<button type="button">Download</button>';
+//     elLevel1 = my.compose(helper.dom.setAttribute('id', group_category.id), helper.dom.setAttribute('class', 'table-tesla__cell__text--bold'), helper.dom.createElement)('div');
+//     elLevel1 = helper.dom.appendInnerHTMLOI(elLevel1, innerEl);
+//     elLevel2 = helper.dom.appendChildNodeOI(elLevel2, elLevel1);
+
+
+
+//     innerEl = '';
+//     elLevel1 = my.compose(helper.dom.setAttribute('class', 'table-tesla__cell__text--bold'), helper.dom.createElement)('div');
+//     elLevel1 = helper.dom.appendInnerHTMLOI(elLevel1, innerEl);
+//     elLevel2 = helper.dom.appendChildNodeOI(elLevel2, elLevel1);
+
+//     innerEl = '';
+//     elLevel1 = my.compose(helper.dom.setAttribute('class', 'table-tesla__cell__text--bold'), helper.dom.createElement)('div');
+//     elLevel1 = helper.dom.appendInnerHTMLOI(elLevel1, innerEl);
+//     elLevel2 = helper.dom.appendChildNodeOI(elLevel2, elLevel1);
+
+//     innerEl = '';
+//     elLevel1 = my.compose(helper.dom.setAttribute('class', 'table-tesla__cell__text--bold'), helper.dom.createElement)('div');
+//     elLevel1 = helper.dom.appendInnerHTMLOI(elLevel1, innerEl);
+//     elLevel2 = helper.dom.appendChildNodeOI(elLevel2, elLevel1);
+    
+
+//     elLevel3 = my.compose(helper.dom.setAttribute('class', 'table-tesla__table__rowbox'), helper.dom.createElement)('div');
+//     elLevel3 = helper.dom.appendChildNodeOI(elLevel3, elLevel2);
+
+//     elLevel4 = helper.dom.getElement('id', 'schedule');
+//     elLevel4 = helper.dom.appendChildNodeOI(elLevel4, elLevel3);
+
+//     elLevel3.addEventListener('click', function() {
+//         helper.events.publish('clickedOnGroupCategory', group_category);
+
+//     });
+
+// }
+
+
+
 function buildGroupCategoryInMain(group_category) {
     
     let elLevel1;
     let elLevel2;
     let elLevel3;
     let elLevel4;
+    let elLevel5;
     let innerEl;
 
-    elLevel2 = my.compose(helper.dom.setAttribute('class', 'table-tesla__table__row'), helper.dom.createElement)('div');
+    elLevel2 = my.compose(helper.dom.setAttribute('class', 'checkbox-field-excel w-checkbox'), helper.dom.createElement)('div');
 
-    innerEl = '';
-    elLevel1 = my.compose(helper.dom.setAttribute('class', 'table-tesla__cell__text--bold'), helper.dom.setAttribute('type', 'checkbox'), helper.dom.createElement)('input');
-    elLevel1 = helper.dom.appendInnerHTMLOI(elLevel1, innerEl);
+    elLevel1 = my.compose(helper.dom.setAttribute('class', 'w-checkbox-input'), helper.dom.setAttribute('type', 'checkbox'), helper.dom.createElement)('input');
     elLevel2 = helper.dom.appendChildNodeOI(elLevel2, elLevel1);
 
     innerEl = group_category.name;
-    elLevel1 = my.compose(helper.dom.setAttribute('class', 'table-tesla__cell__text--bold'), helper.dom.createElement)('div');
-    elLevel1 = helper.dom.appendInnerHTMLOI(elLevel1, innerEl);
-    elLevel2 = helper.dom.appendChildNodeOI(elLevel2, elLevel1);
-
-    innerEl = '<button type="button">Download</button>';
-    elLevel1 = my.compose(helper.dom.setAttribute('id', group_category.id), helper.dom.setAttribute('class', 'table-tesla__cell__text--bold'), helper.dom.createElement)('div');
-    elLevel1 = helper.dom.appendInnerHTMLOI(elLevel1, innerEl);
-    elLevel2 = helper.dom.appendChildNodeOI(elLevel2, elLevel1);
-
-
-
-    innerEl = '';
-    elLevel1 = my.compose(helper.dom.setAttribute('class', 'table-tesla__cell__text--bold'), helper.dom.createElement)('div');
-    elLevel1 = helper.dom.appendInnerHTMLOI(elLevel1, innerEl);
-    elLevel2 = helper.dom.appendChildNodeOI(elLevel2, elLevel1);
-
-    innerEl = '';
-    elLevel1 = my.compose(helper.dom.setAttribute('class', 'table-tesla__cell__text--bold'), helper.dom.createElement)('div');
-    elLevel1 = helper.dom.appendInnerHTMLOI(elLevel1, innerEl);
-    elLevel2 = helper.dom.appendChildNodeOI(elLevel2, elLevel1);
-
-    innerEl = '';
-    elLevel1 = my.compose(helper.dom.setAttribute('class', 'table-tesla__cell__text--bold'), helper.dom.createElement)('div');
+    elLevel1 = my.compose(helper.dom.setAttribute('class', 'field-label-11excel w-form-label'), helper.dom.createElement)('label');
     elLevel1 = helper.dom.appendInnerHTMLOI(elLevel1, innerEl);
     elLevel2 = helper.dom.appendChildNodeOI(elLevel2, elLevel1);
     
 
-    elLevel3 = my.compose(helper.dom.setAttribute('class', 'table-tesla__table__rowbox'), helper.dom.createElement)('div');
+    elLevel3 = my.compose(helper.dom.setAttribute('class', 'form-block w-form'), helper.dom.createElement)('div');
     elLevel3 = helper.dom.appendChildNodeOI(elLevel3, elLevel2);
 
-    elLevel4 = helper.dom.getElement('id', 'courses');
+    elLevel4 = my.compose(helper.dom.setAttribute('class', 'table-tesla__table__row_excel'), helper.dom.createElement)('div');
     elLevel4 = helper.dom.appendChildNodeOI(elLevel4, elLevel3);
 
-    elLevel3.addEventListener('click', function() {
+
+
+    elLevel5 = helper.dom.getElement('id', 'schedule');
+    elLevel5 = helper.dom.appendChildNodeOI(elLevel5, elLevel4);
+
+    elLevel2.addEventListener('click', function() {
         helper.events.publish('clickedOnGroupCategory', group_category);
 
     });
+
+
+}
+
+function buildHeaderInMain() {
+    
+    let elLevel1;
+    let elLevel2;
+    let elLevel3;
+    let elLevel4;
+    let elLevel5;
+    let elLevel6;
+    let innerEl;
+
+
+    elLevel5 = my.compose(helper.dom.setAttribute('class', 'table-tesla__table__headerbox'), helper.dom.createElement)('div');
+
+    elLevel4 = my.compose(helper.dom.setAttribute('class', 'table-tesla__header__lablebox--course'), helper.dom.createElement)('div');
+    elLevel3 = my.compose(helper.dom.setAttribute('class', 'table-tesla__header__cell__text'), helper.dom.createElement)('div');
+
+    innerEl = 'GROUP CATEGORY';
+    elLevel3 = helper.dom.appendInnerHTMLOI(elLevel3, innerEl);
+    
+    elLevel4 = helper.dom.appendChildNodeOI(elLevel4, elLevel3);
+
+    elLevel5 = helper.dom.appendChildNodeOI(elLevel5, elLevel4);
+
+
+    
+
+
+
+    elLevel2 = my.compose(helper.dom.setAttribute('id', 'email-form-4'), helper.dom.createElement)('form');
+    
+    
+    elLevel1 = my.compose(helper.dom.setAttribute('type', 'submit'), helper.dom.setAttribute('class', 'submit-button-excel w-button'), helper.dom.createElement)('input');
+    
+    elLevel2 = helper.dom.appendChildNodeOI(elLevel2, elLevel1);
+    
+
+    elLevel3 = my.compose(helper.dom.setAttribute('class', 'form-block-2 w-form'), helper.dom.createElement)('div');
+    elLevel3 = helper.dom.appendChildNodeOI(elLevel3, elLevel2);
+
+
+
+    elLevel4 = my.compose(helper.dom.setAttribute('class', 'table-tesla__header__lablebox-period'), helper.dom.createElement)('div');
+    elLevel4 = helper.dom.appendChildNodeOI(elLevel4, elLevel3);
+
+    elLevel5 = helper.dom.appendChildNodeOI(elLevel5, elLevel4);
+
+
+
+    elLevel6 = my.compose(helper.dom.setAttribute('class', 'schedule-tesla__left'), helper.dom.getElement('id'))('schedule');
+    
+    elLevel6 = helper.dom.appendChildNodeOI(elLevel6, elLevel5);
+
+    
+
+
+    // <div class="table-tesla__table__headerbox">
+    //     <div class="table-tesla__header__lablebox-period">
+    //         <div class="table-tesla__header__cell__text">GROUP CATEGORY</div>
+    //     </div>
+
+    //     <div class="table-tesla__table__header__lablebox-programandyear">
+    //         <div class="form-block-2 w-form">
+    //             <form id="email-form-4" name="email-form-4" data-name="Email Form 4">
+    //                 <input type="submit" value="Submit" data-wait="Please wait..." class="submit-button-excel w-button">
+    //             </form>
+    //         </div>
+    //     </div>
+    // </div>
+
+
 }
 
 

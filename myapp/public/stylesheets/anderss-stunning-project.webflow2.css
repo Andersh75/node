@@ -1,7 +1,7 @@
 body {
   font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
   color: #333;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 20px;
 }
 
@@ -244,7 +244,7 @@ body {
   padding-top: 10px;
   font-family: Roboto, sans-serif;
   color: #484848;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 18px;
   font-weight: 700;
   text-transform: capitalize;
@@ -324,7 +324,7 @@ body {
   padding-bottom: 14px;
   font-family: Roboto, sans-serif;
   color: #484848;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 18px;
   font-weight: 700;
   letter-spacing: 0%;
@@ -753,7 +753,7 @@ body {
   padding-top: 20px;
   font-family: 'Open Sans', sans-serif;
   color: #666;
-  font-size: 15px;
+  font-size: 14px;
 }
 
 .block-tesla__rightbox__image {
@@ -768,7 +768,7 @@ body {
   padding-top: 21px;
   padding-bottom: 0px;
   color: #666;
-  font-size: 15px;
+  font-size: 14px;
 }
 
 .h2-tesla--white {
@@ -786,7 +786,7 @@ body {
 .h2-tesla {
   font-family: 'Open Sans', sans-serif;
   color: #000;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 24px;
   font-weight: 700;
 }
@@ -1237,7 +1237,7 @@ body {
   padding-left: 20px;
   font-family: 'Open Sans', sans-serif;
   color: #fff;
-  font-size: 15px;
+  font-size: 14px;
 }
 
 .div-block-41 {
@@ -1274,7 +1274,7 @@ body {
 .p-tesla-white {
   font-family: 'Open Sans', sans-serif;
   color: #fff;
-  font-size: 15px;
+  font-size: 14px;
 }
 
 .div-block-42 {
@@ -1392,7 +1392,7 @@ body {
 .p-tesla-15-400-666666--centered {
   font-family: 'Open Sans', sans-serif;
   color: #666;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 23px;
   text-align: center;
 }
@@ -1537,7 +1537,6 @@ body {
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  margin-top: 0px;
   margin-bottom: 6px;
   padding-right: 12px;
   padding-left: 12px;
@@ -1550,8 +1549,6 @@ body {
 }
 
 .field-label {
-  margin-bottom: 7px;
-  padding-bottom: 0px;
   font-family: 'Open Sans', sans-serif;
   color: #333;
   font-size: 11px;
@@ -1583,7 +1580,7 @@ body {
   margin-bottom: -2px;
   padding-left: 10px;
   color: #999;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 23px;
   font-weight: 400;
 }
@@ -1607,8 +1604,8 @@ body {
   display: -ms-flexbox;
   display: flex;
   height: auto;
-  padding-top: 11px;
-  padding-bottom: 11px;
+  padding-top: 18px;
+  padding-bottom: 18px;
   padding-left: 15px;
   -webkit-box-flex: 1;
   -webkit-flex-grow: 1;
@@ -1813,7 +1810,7 @@ body {
   padding-bottom: 0px;
   font-family: 'Open Sans', sans-serif;
   color: #666;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 23px;
 }
 
@@ -1968,7 +1965,7 @@ body {
 .h-tesla-15-700-666666 {
   font-family: 'Open Sans', sans-serif;
   color: #666;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 23px;
   font-weight: 700;
 }
@@ -1976,7 +1973,7 @@ body {
 .h-tesla-15-400-666666 {
   font-family: 'Open Sans', sans-serif;
   color: #666;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 23px;
 }
 
@@ -1998,7 +1995,7 @@ body {
 .h-tesla-15-600-000000 {
   font-family: 'Open Sans', sans-serif;
   color: #000;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 23px;
   font-weight: 600;
 }
@@ -2061,10 +2058,6 @@ body {
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  -webkit-box-pack: start;
-  -webkit-justify-content: flex-start;
-  -ms-flex-pack: start;
-  justify-content: flex-start;
   -webkit-box-align: center;
   -webkit-align-items: center;
   -ms-flex-align: center;
@@ -2113,10 +2106,12 @@ body {
 .table-tesla__cell__text {
   margin-left: 0px;
   padding-left: 0px;
-  -webkit-box-flex: 1;
-  -webkit-flex: 1;
-  -ms-flex: 1;
-  flex: 1;
+  -webkit-flex-shrink: 0;
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
+  -webkit-flex-basis: 90px;
+  -ms-flex-preferred-size: 90px;
+  flex-basis: 90px;
   font-family: 'Open Sans', sans-serif;
   color: #666;
   font-size: 14px;
@@ -2136,7 +2131,7 @@ body {
   flex-basis: 90px;
   font-family: 'Open Sans', sans-serif;
   color: #666;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 23px;
 }
 
@@ -2225,7 +2220,6 @@ body {
   padding-bottom: 0px;
   font-family: 'Open Sans', sans-serif;
   color: #666;
-  font-size: 13px;
 }
 
 .field-label-9 {
@@ -2384,121 +2378,6 @@ body {
   font-family: 'Open Sans', sans-serif;
   color: #fff;
   font-size: 11px;
-}
-
-.utility-page-wrap {
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  width: 100vw;
-  height: 100vh;
-  max-height: 100%;
-  max-width: 100%;
-  -webkit-box-pack: center;
-  -webkit-justify-content: center;
-  -ms-flex-pack: center;
-  justify-content: center;
-  -webkit-box-align: center;
-  -webkit-align-items: center;
-  -ms-flex-align: center;
-  align-items: center;
-}
-
-.utility-page-content {
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  width: 260px;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-  -webkit-flex-direction: column;
-  -ms-flex-direction: column;
-  flex-direction: column;
-  text-align: center;
-}
-
-.utility-page-form {
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-  -webkit-flex-direction: column;
-  -ms-flex-direction: column;
-  flex-direction: column;
-  -webkit-box-align: stretch;
-  -webkit-align-items: stretch;
-  -ms-flex-align: stretch;
-  align-items: stretch;
-}
-
-.table-tesla__table__row_excel {
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  margin-left: 0px;
-  padding-top: 15px;
-  padding-bottom: 15px;
-  padding-left: 15px;
-  -webkit-box-align: center;
-  -webkit-align-items: center;
-  -ms-flex-align: center;
-  align-items: center;
-  border-top: 1px solid #ccc;
-  border-left: 4px none #000;
-}
-
-.table-tesla__table__row_excel.red-warning {
-  border-left: 4px solid #c00;
-}
-
-.form-block {
-  margin-bottom: 0px;
-  -webkit-box-flex: 0;
-  -webkit-flex: 0 0 auto;
-  -ms-flex: 0 0 auto;
-  flex: 0 0 auto;
-}
-
-.checkbox-field-2 {
-  margin-bottom: 0px;
-  line-height: 20px;
-}
-
-.field-label-11 {
-  font-family: 'Open Sans', sans-serif;
-  color: #666;
-  line-height: 20px;
-  font-weight: 400;
-}
-
-.field-label-11excel {
-  margin-bottom: 0px;
-  font-family: 'Open Sans', sans-serif;
-  color: #000;
-  line-height: 20px;
-  font-weight: 600;
-}
-
-.form-block-2 {
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  margin-bottom: 0px;
-}
-
-.submit-button-excel {
-  line-height: 6px;
-}
-
-.checkbox-field-excel {
-  margin-bottom: 0px;
-  line-height: 20px;
 }
 
 @font-face {

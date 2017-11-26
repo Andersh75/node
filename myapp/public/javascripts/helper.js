@@ -2,7 +2,7 @@ var helper = {};
 (function() {
 
 
-    //Map, Reduce, Filter
+    // Map, Reduce, Filter
     this.map = my.curry(function(callback, array) {
         var newArray = [];
         for (var i = 0; i < array.length; i = i + 1) {
@@ -34,10 +34,7 @@ var helper = {};
     //Strings
     this.str = {
         adder: my.curry(function(acc, nextString) {
-            return acc + nextString;
-        }),
-        splitter: my.curry(function(str, splitter) {
-            return str.split(splitter);
+        return acc + nextString;
         })
     };
 
