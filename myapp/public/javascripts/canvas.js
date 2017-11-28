@@ -1,7 +1,7 @@
 'use strict';
 
 
-const logOn = true;
+const logOn = false;
 
 const log = my.curry(function(someVariable) {
     if (logOn) {
