@@ -35,9 +35,17 @@ var helper = {};
     this.str = {
         adder: my.curry(function(acc, nextString) {
         return acc + nextString;
+        }),
+        startsWith: my.curry(function(str, test) {
+            return str.substring(0,2) === test;
+        }),
+        removeFirstWordsFromString: my.curry(function(str, count) {
+            return str.split(" ").slice(count).join(" ");
+        }),
+        getFirstWordsFromString: my.curry(function(str, count) {
+            return str.split(" ").slice(0, count).join(" ");
         })
     };
-
 
 
     //Arrays
