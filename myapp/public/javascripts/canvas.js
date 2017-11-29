@@ -40,6 +40,8 @@ helper.events.subscribe('reloadedPage', function(user) {
 
         data.courses.forEach(buildCoursesInSideboxLeft);
 
+
+        //Make recursive...
         data.courses.forEach(function(course) {
             course.done = false;
             helper.events.publish('prepareClickedOnCourse', course);
@@ -199,7 +201,7 @@ helper.events.subscribe('prepareClickedOnGroupCategory', function(group_category
 
 });
 
-
+//TRY AND MAKE A RECURSIVE VERSION
 function addGroupCategoriesToCourse(data, objs) {
     data.courses = data.courses.map(function(course) {
     
