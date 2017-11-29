@@ -255,7 +255,7 @@ function buildCoursesInSideboxLeft(course) {
 
     course = cutNameAndCodeFromCourse(course);
 
-    elLevel1 = my.compose(helper.dom.setAttribute('id', course.id), helper.dom.uncheck, helper.dom.setAttribute('type', 'radio'), helper.dom.setAttribute('class', 'resurs-form-field-checkbox w-checkbox-input'), helper.dom.createElement)('input');
+    elLevel1 = my.compose(helper.dom.setAttribute('id', course.id), helper.dom.uncheck, helper.dom.setAttribute('type', 'checkbox'), helper.dom.setAttribute('class', 'resurs-form-field-checkbox w-checkbox-input'), helper.dom.createElement)('input');
     elLevel2 = my.compose(helper.dom.setAttribute('class', 'resurs-form-field w-checkbox'), helper.dom.createElement)('div');
     elLevel2 = helper.dom.appendChildNodeOI(elLevel2, elLevel1);
 

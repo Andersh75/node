@@ -1768,7 +1768,8 @@ label {
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  margin-bottom: 10px;
+  margin-bottom: 23px;
+  padding-bottom: 0px;
   padding-left: 1px;
   -webkit-box-orient: vertical;
   -webkit-box-direction: normal;
@@ -1782,6 +1783,9 @@ label {
   -webkit-flex-shrink: 0;
   -ms-flex-negative: 0;
   flex-shrink: 0;
+  border-style: none;
+  border-bottom-width: 1px;
+  border-bottom-color: hsla(0, 0%, 40%, .4);
 }
 
 .resurs-form-field-table.select-on-top {
@@ -1823,6 +1827,13 @@ label {
 }
 
 .resurs-form-field-label.main {
+  -webkit-box-flex: 1;
+  -webkit-flex-grow: 1;
+  -ms-flex-positive: 1;
+  flex-grow: 1;
+  -webkit-flex-shrink: 1;
+  -ms-flex-negative: 1;
+  flex-shrink: 1;
   color: #666;
 }
 
@@ -2037,6 +2048,10 @@ label {
   -webkit-justify-content: flex-start;
   -ms-flex-pack: start;
   justify-content: flex-start;
+  -webkit-box-align: start;
+  -webkit-align-items: flex-start;
+  -ms-flex-align: start;
+  align-items: flex-start;
   -webkit-box-flex: 0;
   -webkit-flex: 0 0 auto;
   -ms-flex: 0 0 auto;
@@ -2244,7 +2259,8 @@ label {
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  margin-bottom: 5px;
+  margin-bottom: 13px;
+  padding-bottom: 0px;
   -webkit-box-orient: vertical;
   -webkit-box-direction: normal;
   -webkit-flex-direction: column;
