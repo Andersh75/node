@@ -115,6 +115,27 @@
 
 
 
+    //Promises
+
+    // Async calls in parallel
+    
+    // function workMyCollection(arr) {
+    //     return q.all(arr.map(function(item) {
+    //         return doSomethingAsync(item);
+    //     }));    
+    // }
+
+    
+    // Async calls in series
+    
+    // function workMyCollection(arr) {
+    //     return arr.reduce(function(promise, item) {
+    //         return promise.then(function(result) {
+    //             return doSomethingAsyncWithResult(item, result);
+    //         });        
+    //     }, q());
+    // }
+
 
 
 
