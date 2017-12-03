@@ -117,24 +117,167 @@
 
     //Promises
 
-    // Async calls in parallel
+    // Async calls in parallel (using map and Promises.All)
     
     // function workMyCollection(arr) {
-    //     return q.all(arr.map(function(item) {
+    //     return Promise.all(arr.map(function(item) {
     //         return doSomethingAsync(item);
     //     }));    
     // }
 
     
-    // Async calls in series
+    // Async calls in parallel (using map and Promises.All)
+
+    // var postIds = [ 2, 4, 7, 42 ];
+    
+    // Promise.all(items.map(fetchPost)).then(function(results) {
+    //     console.log(results);
+    // });
+
+
+    // Async calls in parallel (using forEach)
+    
+    // var products = ['sku-1', 'sku-2', 'sku-3'];
+    // products.forEach(function (sku) { getInfo(sku).then(function (info) {
+    //         console.log(info)
+    //     });
+    // });
+    // function getInfo(sku) { console.log('Requested info for ' + sku); return ajax(/*someurl for sku*/);
+    // }
+    // Console output:
+    // Requested info for sku-1
+    // Requested info for sku-2
+    // Requested info for sku-3
+    // Info for sku-1
+    // Info for sku-2
+    // Info for sku-3
+
+
+    
+    // Async calls in series (using reduce)
     
     // function workMyCollection(arr) {
     //     return arr.reduce(function(promise, item) {
     //         return promise.then(function(result) {
     //             return doSomethingAsyncWithResult(item, result);
     //         });        
-    //     }, q());
+    //     }, Promise.resolve());
     // }
+
+
+    // Async calls in series (using reduce)
+
+    // var postIds = [ 2, 4, 7, 42 ];
+    
+    // var sequencePromise = postIds.reduce(function(promise, item) {
+    //     return promise.then(function(results) {
+    //         return fetchPost(item)
+    //             .then(results.push.bind(results))
+    //             .then(function() { return results; });
+    //     });
+    // }, Promise.resolve([]));
+        
+    // sequencePromise.then(function(results) {
+    //     console.log(results);
+    // });
+
+
+    // Async calls in series (using reduce)
+
+    // function sequence(array, callback) {
+    //     return array.reduce(function chain(promise, item) {
+    //         return promise.then(function () {
+    //             return callback(item);
+    //         });
+    //     }, Promise.resolve());
+    // }
+
+    // var products = ['sku-1', 'sku-2', 'sku-3'];
+    
+    // sequence(products, function (sku) {
+    //     return getInfo(sku).then(function (info) {
+    //             console.log(info);
+    //     });
+    // }).catch(function (reason) { 
+    //     console.log(reason);
+    // });
+
+    // function getInfo(sku) {
+    //     console.log('Requested info for ' + sku); 
+    //     return ajax(/*someurl for sku*/);
+    // }
+
+    // Console output:
+    // Requested info for sku-1
+    // Info for sku-1
+    // Requested info for sku-2
+    // Info for sku-2
+    // Requested info for sku-3
+    // Info for sku-3
+
+
+
+    // Async calls in series (using recursion)
+
+    // function sequence(array, callback) { 
+    //     function chain(array, index) {
+    //         if (index == array.length) 
+    //             return Promise.resolve();
+    //         return Promise.resolve(callback(array[index])).then(function () {
+    //             return chain(array, index + 1); });
+    //         }
+    //     return chain(array, 0);
+    // }
+
+
+
+    // Async calls in series (using recursion - adds to the chain on demand after resolving the preceding promise)
+
+    // function readAllChunks(readableStream) {
+    //     var reader = readableStream.getReader(); 
+    //     var chunks = [];
+    //     return pump();
+        
+    //     function pump() {
+    //         return reader.read().then(function (result) {
+    //             if (result.done) { 
+    //                 return chunks;
+    //             }
+    //             chunks.push(result.value);
+    //             return pump(); 
+    //         });
+    //     } 
+    // }
+
+
+
+    // Passing state
+
+    // function fetchPost(id) {
+    //     id = id || 1;
+    //    return Promise.resolve($.ajax({
+    //        'url': 'https://jsonplaceholder.typicode.com/posts/' + id
+    //    }));
+    // }
+   
+    // function fetchAuthor(id) {
+    //         id = id || 1;
+    //     return Promise.resolve($.ajax({
+    //         'url': 'https://jsonplaceholder.typicode.com/users/' + id
+    //     }));
+    // }
+    
+    // fetchPost(1).then(function(post) {
+    //     return Promise.all([ post, fetchAuthor(post.userId) ]);
+    // }).then(function(results) {
+    //     var data = {
+    //         'post': results[0],
+    //         'user': results[1]
+    //     };
+        
+    //     // Do something with the data...
+    //     console.log(data)
+    // });
 
 
 
