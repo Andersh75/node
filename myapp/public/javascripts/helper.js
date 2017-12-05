@@ -117,15 +117,209 @@ var helper = {};
             request.open('GET', baseString + requestString);
             request.responseType = 'application/json';
             request.send();
+            console.log('here...');
             request.onreadystatechange = function () {
+                console.log(baseString + requestString);
+                console.log(request.readyState);
+                console.log(request.status);
                 if (request.readyState === 4 && request.status === 200) {
+                    console.log(request.response);
                     resolve(JSON.parse(request.response));
+                    
+                }
+                if (request.readyState === 4 && request.status !== 200) {
+                    console.log(request.response);
+                    //throw 'Uh-oh! rejected message';
+                    reject('meddelande');
+                    
                 }
             };
         })
     });
 
-   
+
+    this.indexedDB = {
+        openDb: my.curry(function (db_name, db_version, storeAndIndex) {
+            console.log("openDb ...");
+        
+            var openRequest = indexedDB.open(db_name,db_version);
+            
+            openRequest.onupgradeneeded = function(e) {
+                var thisDB = e.target.result; 
+                console.log("running onupgradeneeded");
+        
+                storeAndIndex.forEach(function(item) {
+                    if(!thisDB.objectStoreNames.contains(item.OS)) {
+                        let itemOS = thisDB.createObjectStore(item.OS, {keyPath: "id"});
+        
+                        item.indices.forEach(function(info) {
+                            itemOS.createIndex(info.index, info.name, {unique:info.unique});
+                        }) 
+                    }
+        
+                });
+            
+                
+            };
+            openRequest.onsuccess = function(e) {
+                console.log("running onsuccess");
+                db = e.target.result;
+                helper.events.publish('reloadedPage', '5091');
+            };
+            
+            openRequest.onerror = function(e) {
+                console.log("onerror!");
+                console.dir(e);
+            };
+        }),
+        getObjectStore: my.curry(function (store_name, mode) {
+            var tx = db.transaction(store_name, mode);
+            return tx.objectStore(store_name);
+        }),
+        getAllInStore: my.curry(function (store_name) {
+            return new Promise((resolve, reject) => {
+                let store = helper.indexedDB.getObjectStore(store_name, 'readonly');
+                let request;
+                let arr = [];
+            
+                request = store.openCursor();
+                request.onsuccess = function(event) {
+                    let cursor = event.target.result;
+            
+                    if (cursor) {
+                        log(cursor.value);
+                        arr.push(cursor.value);
+                        cursor.continue();
+    
+                    } else {
+                        console.log("No more entries");
+                        if(arr.length != 0) {
+                            resolve(arr);
+                        } else {
+                            reject();
+                        };
+                        
+                    }
+                };
+
+                request.onerror = function(event) {
+                    reject();
+                };
+                
+            });      
+            
+        }),
+        getOneFromIndexInStore: my.curry(function (store_name, index_name, index_value) {
+            return new Promise((resolve, reject) => {
+        
+                let store = helper.indexedDB.getObjectStore(store_name, 'readonly');
+                let index = store.index(index_name);
+                let request;
+            
+                request = index.get(index_value);
+                request.onsuccess = function(event) {
+                    log(event.target.result);
+                    resolve(event.target.result);
+                };
+            });
+        }),
+        getAllFromIndexInStore: my.curry(function (store_name, index_name, index_value) {
+            return new Promise((resolve, reject) => {
+                console.log('store_name: ', store_name);
+                console.log('index_name: ', index_name);
+                console.log('index_value: ', index_value);
+                let singleKeyRange = IDBKeyRange.only(index_value);
+                let store = helper.indexedDB.getObjectStore(store_name, 'readonly');
+                let index = store.index(index_name);
+                let request;
+                let arr = [];
+            
+                request = index.openCursor(singleKeyRange);
+                request.onsuccess = function(event) {
+                    let cursor = event.target.result;
+            
+                    if (cursor) {
+                        log(cursor.value);
+                        arr.push(cursor.value);
+                        console.log('cursor: ', arr);
+                        cursor.continue();
+                    } else {
+                        console.log("No more entries", index_name);
+                        console.log(arr);
+                        if (arr.length) {
+                            console.log('arr.length');
+                            resolve(arr);
+                        } else {
+                            console.log('arr.length == 0');
+                            reject(); 
+                        }
+                        
+                    }
+                };
+
+                request.onerror = function(event) {
+                    console.log('An error!');
+                    reject();
+                };
+            });
+        }),
+        deleteOneFromKeyInStore: my.curry(function (store_name, key) {
+            
+            
+            let store = helper.indexedDB.getObjectStore(store_name, 'readwrite');
+            let request = store.delete(key);
+            
+            request.onsuccess = function(e) {
+                log('deleted one');
+                console.dir(e);
+            }
+        
+            request.onerror = function(e) {
+                console.log("Error");
+                console.dir(e);
+            }
+        }),
+        addObjectToStore: my.curry(function (store_name, obj) {
+            //console.log("addPublication arguments:", obj);
+        
+            var store = helper.indexedDB.getObjectStore(store_name, 'readwrite');
+            var req;
+            try {
+              req = store.add(obj);
+            } catch (e) {
+              if (e.name == 'DataCloneError') {
+                console.log(e.name);
+              }
+                
+              throw e;
+            }
+            req.onsuccess = function (event) {
+              console.log("Insertion in DB successful");
+            };
+            req.onerror = function() {
+              //console.error("addPublication error", this.error);
+            };
+        }),
+        getOneFromKeyInStore: my.curry(function (store_name, key) {
+            
+            
+                let store = helper.indexedDB.getObjectStore(store_name, 'readonly');
+                let request = store.get(key);
+                
+                request.onsuccess = function(e) {
+                    log('get one');
+                    var result = e.target.result;
+                    console.dir(result);
+                }
+            
+                request.onerror = function(e) {
+                    console.log("Error");
+                    console.dir(e);
+                }
+            })
+    };
+
+    
 
     
 

@@ -10,16 +10,20 @@ const log = my.curry(function(someVariable) {
     return someVariable;
 });
 
+function AJAXorIndexedDB(user) {
+    if (helper.indexedDB.getAllInStore('courses')) {
+        return helper.indexedDB.getAllInStore('courses');
+    } else {
+        return coursesFromUser(user);
+    }
+}
 
+function buildCourses(objs) {
 
-//Event listeners
-helper.events.subscribe('reloadedPage', function(user) {
-    coursesFromUser(user).then((objs) => {
+        console.log(objs);
 
-        //buildHeaderInMain();
         helper.dom.setAttribute('class', 'resurs-mainbox', helper.dom.getElement('id', 'mainbox'));
 
-        // //log(objs);
         let innerEl = '<div class="resurs-main-header-row">\
         <div class="resurs-main-header-lable-box">\
           <div class="resurs-main-header-lable">INNEHÅLL</div>\
@@ -29,34 +33,42 @@ helper.events.subscribe('reloadedPage', function(user) {
             <form id="email-form-4" name="email-form-4" data-name="Email Form 4" class="resurs-main-header-form"><input type="submit" value="Skicka" data-wait="Please wait..." class="resurs-main-header-form-button w-button"></form>\
             <div class="w-form-done"></div>\
             <div class="w-form-fail"></div>\
-          </div>\
-        </div>\
-      </div>';
+            </div>\
+            </div>\
+        </div>';
 
-      helper.dom.appendInnerHTMLIO(innerEl, helper.dom.getElement('id', 'mainbox'));
+        helper.dom.appendInnerHTMLIO(innerEl, helper.dom.getElement('id', 'mainbox'));
         
 
         data.courses = objs;
-        //getAllInStore('courses');
-        //getOneFromKeyInStore('courses', 675);
-        getAllFromIndexInStore('group_categories', 'course_id', 675);
-
         
 
         data.courses.forEach(buildCoursesInSideboxLeft);
 
-        objs.forEach(addObjectToCoursesStore);
+        //objs.forEach(addObjectToCoursesStore);
         
 
 
         //Make recursive...
         data.courses.forEach(function(course) {
             course.done = false;
-            helper.events.publish('prepareClickedOnCourse', course);
+            //helper.events.publish('prepareClickedOnCourse', course);
         });
-    });
-        
+    }
+
+//Event listeners
+helper.events.subscribe('reloadedPage', function(user) {    
+    helper.indexedDB.getAllInStore('courses').then(function(objs) {
+        return buildCourses(objs);
+    }, function (err) {
+        return coursesFromUser(user).then(function(objs) {
+            return buildCourses(objs);
+        });
+    }); 
 });
+
+
+
 
 helper.events.subscribe('clickedOnCourse', function(course) {
 
@@ -64,23 +76,39 @@ helper.events.subscribe('clickedOnCourse', function(course) {
         
         helper.dom.removeChildrenUntil(helper.dom.getElement('id', 'mainbox'), 1);
         buildGroupCategoriesAndPrepareGroups(course);
+        console.log('Im done!');
         
 
     } else {
+        console.log('removing...');
         helper.dom.removeChildrenUntil(helper.dom.getElement('id', 'mainbox'), 1);
 
-        let groupCategoryRequestPromise = helper.map(groupCateroriesFromCourse, [course])[0];
-        groupCategoryRequestPromise.then((objs) => {
+        helper.indexedDB.getAllFromIndexInStore('group_categories', 'course_id', course.id).then((objs) => {
+            console.log('HERE...');
 
             if (objs.length) {
+                console.log('obj.length: ', objs.length);
                 addGroupCategoriesToCourse(data, objs);
                 buildGroupCategoriesAndPrepareGroups(course);
                 course.done = true;
             } 
             
-        }).catch(function() {
-            console.log('fail');
-            helper.dom.removeChildrenUntil(helper.dom.getElement('id', 'mainbox'), 1);
+        }).catch(function(message) {
+            groupCateroriesFromCourse2(course).then((objs) => {
+                console.log('HERE IN CATCH...');
+    
+                if (objs.length) {
+                    addGroupCategoriesToCourse(data, objs);
+                    buildGroupCategoriesAndPrepareGroups(course);
+                    course.done = true;
+                } 
+                
+            }).catch(function(message) {
+                console.log(message);
+                console.log('failar');
+                //helper.dom.removeChildrenUntil(helper.dom.getElement('id', 'mainbox'), 1);
+            });
+            
         });
     }
     
@@ -90,8 +118,9 @@ helper.events.subscribe('clickedOnCourse', function(course) {
 helper.events.subscribe('prepareClickedOnCourse', function(course) {
     if (typeof course.group_categories === "undefined" || !course.done) {
 
-        let groupCategoryRequestPromise = helper.map(groupCateroriesFromCourse, [course])[0];
-        groupCategoryRequestPromise.then((objs) => {
+        //let groupCategoryRequestPromise = helper.map(groupCateroriesFromCourse, [course])[0];
+        helper.indexedDB.getAllFromIndexInStore('group_categories', 'course_id', course.id).then((objs) => {
+            console.log('HERE...');
     
             if (objs.length) {
                 addGroupCategoriesToCourse(data, objs);
@@ -99,8 +128,22 @@ helper.events.subscribe('prepareClickedOnCourse', function(course) {
                 objs.forEach(addObjectToGroupCategoriesStore);
             }        
 
-        }).catch(function() {
-            console.log('fail - groupCategoryRequestPromise', course);
+        }).catch(function(message) {
+            groupCateroriesFromCourse2(course).then((objs) => {
+                console.log('HERE...');
+    
+                if (objs.length) {
+                    addGroupCategoriesToCourse(data, objs);
+                    course.done = true;
+                    objs.forEach(addObjectToGroupCategoriesStore);
+                } 
+                
+            }).catch(function(message) {
+                console.log(message);
+                console.log('failar');
+                helper.dom.removeChildrenUntil(helper.dom.getElement('id', 'mainbox'), 1);
+            });
+            
         });
 
 
@@ -139,7 +182,8 @@ helper.events.subscribe('clickedOnGroupCategory', function(group_category) {
                                         requestJsonPostFromNodeUsers(groupCategory.groups).then((message) => {
                                             log(message);
                                         })
-                                    }).catch(function() {
+                                    }).catch(function(message) {
+                                        console.log(message);
                                         console.log('fail - userRequestPromiseAll');
                                     });
             
@@ -538,32 +582,42 @@ function coursesFromUser(item) {
 
 
 function groupCateroriesFromCourse(item) {
-    const searchObj = {
-        area: "courses",
-        areaId: item.id,
-        what: "group_categories",
-        perPage: "100",
-        token: "8779~3LmsZZse4dRnHvdnYBRt69Yc5dTFDApw1FlZCP49T4o6xIDsVXrKZ122VQFiopCh"
-    }
+    helper.indexedDB.getAllFromIndexInStore('group_categories', 'course_id', item.id).then((arr) => {
+        log(arr);
+        console.log('not rejected');
+        return helper.indexedDB.getAllFromIndexInStore('group_categories', 'course_id', item.id);
+    });
+}
 
-    let searchString = '/' + searchObj.area + '/' + searchObj.areaId + '/' + searchObj.what + '?per_page=' + searchObj.perPage + '&access_token=' + searchObj.token;
-
-    return requestJsonGetFromCanvas(searchString);
+function groupCateroriesFromCourse2(item) {
+        const searchObj = {
+            area: "courses",
+            areaId: item.id,
+            what: "group_categories",
+            perPage: "100",
+            token: "8779~3LmsZZse4dRnHvdnYBRt69Yc5dTFDApw1FlZCP49T4o6xIDsVXrKZ122VQFiopCh"
+        }
+    
+        let searchString = '/' + searchObj.area + '/' + searchObj.areaId + '/' + searchObj.what + '?per_page=' + searchObj.perPage + '&access_token=' + searchObj.token;
+    
+        return requestJsonGetFromCanvas(searchString); 
 }
 
 
 function groupsFromGroupCaterories(item) {
-    const searchObj = {
-        area: "group_categories",
-        areaId: item.id,
-        what: "groups",
-        perPage: "100",
-        token: "8779~3LmsZZse4dRnHvdnYBRt69Yc5dTFDApw1FlZCP49T4o6xIDsVXrKZ122VQFiopCh"
-    }
+    helper.indexedDB.getAllFromIndexInStore('groups', 'group_category_id', item.id).then(() => helper.indexedDB.getAllFromIndexInStore('groups', 'group_category_id', item.id)).catch(() => {
+        const searchObj = {
+            area: "group_categories",
+            areaId: item.id,
+            what: "groups",
+            perPage: "100",
+            token: "8779~3LmsZZse4dRnHvdnYBRt69Yc5dTFDApw1FlZCP49T4o6xIDsVXrKZ122VQFiopCh"
+        }
 
-    let searchString = '/' + searchObj.area + '/' + searchObj.areaId + '/' + searchObj.what + '?per_page=' + searchObj.perPage + '&access_token=' + searchObj.token;
+        let searchString = '/' + searchObj.area + '/' + searchObj.areaId + '/' + searchObj.what + '?per_page=' + searchObj.perPage + '&access_token=' + searchObj.token;
 
-    return requestJsonGetFromCanvas(searchString);
+        return requestJsonGetFromCanvas(searchString);
+    });
 }
 
 function usersFromGroups(item) {
@@ -594,198 +648,44 @@ const DB_STORE_NAME = 'courses';
 var db;
 
 
-
-function openDb(db_name, db_version) {
-    console.log("openDb ...");
-
-
-    var openRequest = indexedDB.open(db_name,db_version);
-    
-    openRequest.onupgradeneeded = function(e) {
-        var thisDB = e.target.result; 
-        console.log("running onupgradeneeded");
-    
-        if(!thisDB.objectStoreNames.contains("courses")) {
-            var coursesOS = thisDB.createObjectStore("courses", {keyPath: "id"});
-            coursesOS.createIndex("course_code", "course_code", {unique:false});
-        }
-    
-        if(!thisDB.objectStoreNames.contains("group_categories")) {
-            var group_categoriesOS = thisDB.createObjectStore("group_categories", {keyPath: "id"});
-            group_categoriesOS.createIndex("course_id", "course_id", {unique:false});
-        }
+const storeAndIndex = [
+    {
+        'OS': 'courses',
+        'indices': [
+            {
+            'index': 'course_code',
+            'name': 'course_code',
+            'unique': false
+            }
+        ]
+    },
+    {
+        'OS': 'group_categories',
+        'indices': [
+            {
+            'index': 'course_id',
+            'name': 'course_id',
+            'unique': false
+            }
+        ]
     }
-
-    openRequest.onsuccess = function(e) {
-        console.log("running onsuccess");
-        db = e.target.result;
-        helper.events.publish('reloadedPage', '5091');
-    }
-    
-    openRequest.onerror = function(e) {
-        console.log("onerror!");
-        console.dir(e);
-    }
-}
+];
 
 
-function getObjectStore(store_name, mode) {
-    var tx = db.transaction(store_name, mode);
-    return tx.objectStore(store_name);
-}
-
-
-function addObjectToStore(store_name, obj) {
-    console.log("addPublication arguments:", obj);
-
-    var store = getObjectStore(store_name, 'readwrite');
-    var req;
-    try {
-      req = store.add(obj);
-    } catch (e) {
-      if (e.name == 'DataCloneError') {
-        console.log(e.name);
-      }
-        
-      throw e;
-    }
-    req.onsuccess = function (event) {
-      console.log("Insertion in DB successful");
-    };
-    req.onerror = function() {
-      console.error("addPublication error", this.error);
-    };
-}
 
 function addObjectToCoursesStore(obj) {
     let store_name;
     store_name = 'courses';
-    return addObjectToStore(store_name, obj);
+    return helper.indexedDB.addObjectToStore(store_name, obj);
 }
 
 function addObjectToGroupCategoriesStore(obj) {
     let store_name;
     store_name = 'group_categories';
-    return addObjectToStore(store_name, obj);
+    return helper.indexedDB.addObjectToStore(store_name, obj);
 }
 
 
-function getOneFromKeyInStore(store_name, key) {
-
-
-    let store = getObjectStore(store_name, 'readonly');
-
-    let request = store.get(key);
-    
-    request.onsuccess = function(e) {
-        log('get one');
-        var result = e.target.result;
-        console.dir(result);
-    }
-
-    request.onerror = function(e) {
-        console.log("Error");
-        console.dir(e);
-    }
-}
-
-function deleteOneFromKeyInStore(store_name, key) {
-    
-    
-    let store = getObjectStore(store_name, 'readwrite');
-
-    let request = store.delete(key);
-    
-    request.onsuccess = function(e) {
-        log('deleted one');
-        console.dir(e);
-    }
-
-    request.onerror = function(e) {
-        console.log("Error");
-        console.dir(e);
-    }
-}
-
-
-
-function getAllFromIndexInStore(store_name, index_name, index_value) {
-    log('hopp');
-
-    let singleKeyRange = IDBKeyRange.only(index_value);
-
-    let store = getObjectStore(store_name, 'readonly');
-
-    let index = store.index(index_name);
-
-    let request;
-
-    request = index.openCursor(singleKeyRange);
-    //log('request');
-    log(request);
-    request.onsuccess = function(event) {
-        log('hipp');
-        let cursor = event.target.result;
-
-        // If the cursor is pointing at something, ask for the data
-        if (cursor) {
-            log('hej');
-            log(cursor.value);
-            cursor.continue();
-
-            // Move on to the next object in store
-        } else {
-            console.log("No more entries");
-        }
-    };
-}
-
-function getOneFromIndexInStore(store_name, index_name, index_value) {
-    log('hopp');
-
-    //let singleKeyRange = IDBKeyRange.only(675);
-
-    let store = getObjectStore(store_name, 'readonly');
-
-    let index = store.index(index_name);
-
-    let request;
-
-    request = index.get(index_value);
-    //log('request');
-    log(request);
-    request.onsuccess = function(event) {
-        log('hipp');
-        log(event.target.result);
-    };
-}
-
-
-
-function getAllInStore(store_name) {
-    //log('hopp');
-
-    let store = getObjectStore(store_name, 'readonly');
-
-    let request;
-
-    request = store.openCursor();
-    request.onsuccess = function(event) {
-        //log('hipp');
-        let cursor = event.target.result;
-
-        // If the cursor is pointing at something, ask for the data
-        if (cursor) {
-            //log('hej');
-            log(cursor.value);
-            cursor.continue();
-
-            // Move on to the next object in store
-        } else {
-            console.log("No more entries");
-        }
-    };
-}
 
 
 //DOMContentLoaded
@@ -801,15 +701,9 @@ document.addEventListener("DOMContentLoaded", function () {
         
     //   console.log(event.result); // should be undefined
     // };
-    openDb('canvasdb', 1);
+    helper.indexedDB.openDb('canvasdb', 1, storeAndIndex);
 
 
 });
 
-
-
-
-
-
-//FLYTTA INDEXEDDB TILL HELPER.JS
 
