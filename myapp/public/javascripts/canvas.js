@@ -1,7 +1,7 @@
 'use strict';
 
 
-const logOn = false;
+const logOn = true;
 
 const log = my.curry(function(someVariable) {
     if (logOn) {
@@ -37,8 +37,16 @@ helper.events.subscribe('reloadedPage', function(user) {
         
 
         data.courses = objs;
+        //getAllInStore('courses');
+        //getOneFromKeyInStore('courses', 675);
+        getAllFromIndexInStore('group_categories', 'course_id', 675);
+
+        
 
         data.courses.forEach(buildCoursesInSideboxLeft);
+
+        objs.forEach(addObjectToCoursesStore);
+        
 
 
         //Make recursive...
@@ -88,6 +96,7 @@ helper.events.subscribe('prepareClickedOnCourse', function(course) {
             if (objs.length) {
                 addGroupCategoriesToCourse(data, objs);
                 course.done = true;
+                objs.forEach(addObjectToGroupCategoriesStore);
             }        
 
         }).catch(function() {
@@ -577,11 +586,230 @@ function usersFromGroups(item) {
 var data = {};
 
 
+//INDEXEDDB
+const DB_NAME = 'canvasdb';
+const DB_VERSION = 1; // Use a long long for this value (don't use a float)
+const DB_STORE_NAME = 'courses';
+
+var db;
+
+
+
+function openDb(db_name, db_version) {
+    console.log("openDb ...");
+
+
+    var openRequest = indexedDB.open(db_name,db_version);
+    
+    openRequest.onupgradeneeded = function(e) {
+        var thisDB = e.target.result; 
+        console.log("running onupgradeneeded");
+    
+        if(!thisDB.objectStoreNames.contains("courses")) {
+            var coursesOS = thisDB.createObjectStore("courses", {keyPath: "id"});
+            coursesOS.createIndex("course_code", "course_code", {unique:false});
+        }
+    
+        if(!thisDB.objectStoreNames.contains("group_categories")) {
+            var group_categoriesOS = thisDB.createObjectStore("group_categories", {keyPath: "id"});
+            group_categoriesOS.createIndex("course_id", "course_id", {unique:false});
+        }
+    }
+
+    openRequest.onsuccess = function(e) {
+        console.log("running onsuccess");
+        db = e.target.result;
+        helper.events.publish('reloadedPage', '5091');
+    }
+    
+    openRequest.onerror = function(e) {
+        console.log("onerror!");
+        console.dir(e);
+    }
+}
+
+
+function getObjectStore(store_name, mode) {
+    var tx = db.transaction(store_name, mode);
+    return tx.objectStore(store_name);
+}
+
+
+function addObjectToStore(store_name, obj) {
+    console.log("addPublication arguments:", obj);
+
+    var store = getObjectStore(store_name, 'readwrite');
+    var req;
+    try {
+      req = store.add(obj);
+    } catch (e) {
+      if (e.name == 'DataCloneError') {
+        console.log(e.name);
+      }
+        
+      throw e;
+    }
+    req.onsuccess = function (event) {
+      console.log("Insertion in DB successful");
+    };
+    req.onerror = function() {
+      console.error("addPublication error", this.error);
+    };
+}
+
+function addObjectToCoursesStore(obj) {
+    let store_name;
+    store_name = 'courses';
+    return addObjectToStore(store_name, obj);
+}
+
+function addObjectToGroupCategoriesStore(obj) {
+    let store_name;
+    store_name = 'group_categories';
+    return addObjectToStore(store_name, obj);
+}
+
+
+function getOneFromKeyInStore(store_name, key) {
+
+
+    let store = getObjectStore(store_name, 'readonly');
+
+    let request = store.get(key);
+    
+    request.onsuccess = function(e) {
+        log('get one');
+        var result = e.target.result;
+        console.dir(result);
+    }
+
+    request.onerror = function(e) {
+        console.log("Error");
+        console.dir(e);
+    }
+}
+
+function deleteOneFromKeyInStore(store_name, key) {
+    
+    
+    let store = getObjectStore(store_name, 'readwrite');
+
+    let request = store.delete(key);
+    
+    request.onsuccess = function(e) {
+        log('deleted one');
+        console.dir(e);
+    }
+
+    request.onerror = function(e) {
+        console.log("Error");
+        console.dir(e);
+    }
+}
+
+
+
+function getAllFromIndexInStore(store_name, index_name, index_value) {
+    log('hopp');
+
+    let singleKeyRange = IDBKeyRange.only(index_value);
+
+    let store = getObjectStore(store_name, 'readonly');
+
+    let index = store.index(index_name);
+
+    let request;
+
+    request = index.openCursor(singleKeyRange);
+    //log('request');
+    log(request);
+    request.onsuccess = function(event) {
+        log('hipp');
+        let cursor = event.target.result;
+
+        // If the cursor is pointing at something, ask for the data
+        if (cursor) {
+            log('hej');
+            log(cursor.value);
+            cursor.continue();
+
+            // Move on to the next object in store
+        } else {
+            console.log("No more entries");
+        }
+    };
+}
+
+function getOneFromIndexInStore(store_name, index_name, index_value) {
+    log('hopp');
+
+    //let singleKeyRange = IDBKeyRange.only(675);
+
+    let store = getObjectStore(store_name, 'readonly');
+
+    let index = store.index(index_name);
+
+    let request;
+
+    request = index.get(index_value);
+    //log('request');
+    log(request);
+    request.onsuccess = function(event) {
+        log('hipp');
+        log(event.target.result);
+    };
+}
+
+
+
+function getAllInStore(store_name) {
+    //log('hopp');
+
+    let store = getObjectStore(store_name, 'readonly');
+
+    let request;
+
+    request = store.openCursor();
+    request.onsuccess = function(event) {
+        //log('hipp');
+        let cursor = event.target.result;
+
+        // If the cursor is pointing at something, ask for the data
+        if (cursor) {
+            //log('hej');
+            log(cursor.value);
+            cursor.continue();
+
+            // Move on to the next object in store
+        } else {
+            console.log("No more entries");
+        }
+    };
+}
 
 
 //DOMContentLoaded
 document.addEventListener("DOMContentLoaded", function () {
-    helper.events.publish('reloadedPage', '5091');
+    // var DBDeleteRequest = window.indexedDB.deleteDatabase("ora_idb5");
+    
+    // DBDeleteRequest.onerror = function(event) {
+    //   console.log("Error deleting database.");
+    // };
+     
+    // DBDeleteRequest.onsuccess = function(event) {
+    //   console.log("Database deleted successfully");
+        
+    //   console.log(event.result); // should be undefined
+    // };
+    openDb('canvasdb', 1);
+
+
 });
 
+
+
+
+
+
+//FLYTTA INDEXEDDB TILL HELPER.JS
 
